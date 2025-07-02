@@ -1,0 +1,56 @@
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  background-color: #0f0f23;
+  color: #cccccc;
+}
+
+/* Button hover effects */
+.calculate-button:hover {
+  background-color: #00ff00;
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.clear-button:hover {
+  background-color: #888;
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .calculator-container {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .button-section {
+    flex-direction: column;
+  }
+  
+  .calculate-button, .clear-button {
+    width: 100%;
+  }
+}
+
+/* Animation for result display */
+.result-animation {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
