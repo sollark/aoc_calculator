@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# my version
+node_modules
+client/dist
+.gitignore
+.vscode
+.env
+logs
+*test*
