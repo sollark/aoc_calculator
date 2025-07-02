@@ -1,375 +1,195 @@
 {
+  "raw_components": [
+    { "id": 1000, "name": "Oak Wood", "description": "Raw logs from oak trees" },
+    { "id": 1001, "name": "Copper Ore", "description": "Raw copper from mining" },
+    { "id": 1002, "name": "Basalt Ore", "description": "Raw basalt from mining" },
+    { "id": 1003, "name": "Essence Crystal", "description": "Magical essence node drop or refined crystal" },
+    { "id": 1004, "name": "Snowdrop", "description": "Herb used in alchemy" },
+    { "id": 1005, "name": "Daffodil", "description": "Herb used in alchemy" },
+    { "id": 1006, "name": "Grave Lily", "description": "Herb used in alchemy" },
+    { "id": 1007, "name": "Water", "description": "Basic alchemy component" },
+    { "id": 1008, "name": "Ruby", "description": "Gemstone for inks" },
+    { "id": 1009, "name": "Ethanol", "description": "Alcohol used in advanced inks" }
+  ],
 
-  "items": [
-
+  "processing_recipes": [
     {
-
-      "id": 1001,
-
-      "name": "Novice Scroll of Intelligence",
-
-      "icon": null,
-
-      "description": "Increases Intelligence for 3 hours",
-
-      "type": "crafted_item",
-
-      "subType": "consumable",
-
-      "recipe": {
-
-        "workStation": "scribe_bench",
-
-        "artisanSkill": "scribe",
-
-        "components": [
-
-          { "id": 2001, "name": "Crude Paper" },
-
-          { "id": 2002, "name": "Magic Powder" },
-
-          { "id": 2003, "name": "Red Ink" }
-
-        ]
-
-      }
-
+      "id": 2000,
+      "name": "Process Oak Timber",
+      "artisanSkill": "lumber_milling",
+      "workStation": "lumber_milling_bench",
+      "components": [
+        { "id": 1000, "name": "Oak Wood", "quantity": 1 }
+      ]
     },
-
     {
-
-      "id": 1002,
-
-      "name": "Apprentice Scroll of Intelligence",
-
-      "icon": null,
-
-      "description": "Increases Intelligence for 3 hours",
-
-      "type": "crafted_item",
-
-      "subType": "consumable",
-
-      "recipe": {
-
-        "workStation": "scribe_bench",
-
-        "artisanSkill": "scribe",
-
-        "components": [
-
-          { "id": 2004, "name": "Fine Paper" },
-
-          { "id": 2002, "name": "Magic Powder" },
-
-          { "id": 2005, "name": "Green Ink" }
-
-        ]
-
-      }
-
+      "id": 2001,
+      "name": "Process Copper Fragments",
+      "artisanSkill": "metalworking",
+      "workStation": "metalworking_bench",
+      "components": [
+        { "id": 1001, "name": "Copper Ore", "quantity": 1 }
+      ]
     },
-
     {
-
-      "id": 1003,
-
-      "name": "Novice Mining Pickaxe",
-
-      "icon": null,
-
-      "description": "Basic mining tool for levels 1–10",
-
-      "type": "crafted_item",
-
-      "subType": "tool",
-
-      "recipe": {
-
-        "workStation": "mining_bench",
-
-        "artisanSkill": "mining",
-
-        "components": [
-
-          { "id": 3001, "name": "Oak Timber", "quantity": 10 },
-
-          { "id": 3002, "name": "Copper Fragments", "quantity": 10 },
-
-          { "id": 3003, "name": "Basalt Weapon Mold", "quantity": 1 }
-
-        ]
-
-      }
-
+      "id": 2002,
+      "name": "Process Grave Lily Powder",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1006, "name": "Grave Lily", "quantity": 1 }
+      ]
     },
-
     {
-
-      "id": 1004,
-
-      "name": "Novice Lumberjacking Axe",
-
-      "icon": null,
-
-      "description": "Basic lumberjacking tool for levels 1–10",
-
-      "type": "crafted_item",
-
-      "subType": "tool",
-
-      "recipe": {
-
-        "workStation": "lumberjacking_bench",
-
-        "artisanSkill": "lumberjacking",
-
-        "components": [
-
-          { "id": 3001, "name": "Oak Timber", "quantity": 10 },
-
-          { "id": 3002, "name": "Copper Fragments", "quantity": 10 },
-
-          { "id": 3003, "name": "Basalt Weapon Mold", "quantity": 1 }
-
-        ]
-
-      }
-
+      "id": 2003,
+      "name": "Process Snowdrop Powder",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1004, "name": "Snowdrop", "quantity": 1 }
+      ]
     },
-      {
-
-      "id": 4001,
-
-      "name": "Novice Herbalism Sickle",
-
-      "icon": null,
-
-      "description": "Basic sickle for gathering herbs (Level 1–10)",
-
-      "type": "crafted_item",
-
-      "subType": "tool",
-
-      "recipe": {
-
-        "workStation": "herbalism_tools_bench",
-
-        "artisanSkill": "herbalism",
-
-        "components": [
-
-          { "id": 3001, "name": "Oak Timber", "quantity": 5 },
-
-          { "id": 3002, "name": "Copper Fragments", "quantity": 5 },
-
-          { "id": 3003, "name": "Basalt Weapon Mold", "quantity": 1 }
-
-        ]
-
-      }
-
-    },
-
     {
-
-      "id": 4002,
-
-      "name": "Apprentice Herbalism Sickle",
-
-      "icon": null,
-
-      "description": "Improved sickle for gathering herbs (Level 10–20)",
-
-      "type": "crafted_item",
-
-      "subType": "tool",
-
-      "recipe": {
-
-        "workStation": "herbalism_tools_bench",
-
-        "artisanSkill": "herbalism",
-
-        "components": [
-
-          { "id": 3004, "name": "Western Larch Timber", "quantity": 10 },
-
-          { "id": 3002, "name": "Copper Fragments", "quantity": 10 },
-
-          { "id": 3003, "name": "Basalt Weapon Mold", "quantity": 1 }
-
-        ]
-
-      }
-
+      "id": 2004,
+      "name": "Process Daffodil Powder",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1005, "name": "Daffodil", "quantity": 1 }
+      ]
     },
-
     {
-
-      "id": 5001,
-
-      "name": "Magic Powder",
-
-      "icon": null,
-
-      "description": "Base powder used in scrolls and inks",
-
-      "type": "crafted_material",
-
-      "recipe": {
-
-        "workStation": "alchemy_station",
-
-        "artisanSkill": "alchemy",
-
-        "components": [
-
-          { "id": 6001, "name": "Essence Crystal", "quantity": 1 },
-
-          { "id": 6002, "name": "Snowdrop", "quantity": 1 },
-
-          { "id": 6003, "name": "Daffodil", "quantity": 1 }
-
-        ]
-
-      },
-
-      "usedInRecipes": []
-
-    },
-
-    {
-
-      "id": 5002,
-
-      "name": "Red Ink",
-
-      "icon": null,
-
-      "description": "Ink for scribing scrolls",
-
-      "type": "crafted_material",
-
-      "recipe": {
-
-        "workStation": "alchemy_station",
-
-        "artisanSkill": "alchemy",
-
-        "components": [
-
-          { "id": 7001, "name": "Water", "quantity": 1 },
-
-          { "id": 7002, "name": "Ruby Powder", "quantity": 1 }
-
-        ]
-
-      },
-
-      "usedInRecipes": []
-
-    },
-
-    {
-
-      "id": 5003,
-
-      "name": "White Ink",
-
-      "icon": null,
-
-      "description": "Ink made from Snowdrop flowers",
-
-      "type": "crafted_material",
-
-      "recipe": {
-
-        "workStation": "alchemy_station",
-
-        "artisanSkill": "alchemy",
-
-        "components": [
-
-          { "id": 7001, "name": "Water", "quantity": 1 },
-
-          { "id": 7003, "name": "Snowdrop Powder", "quantity": 1 }
-
-        ]
-
-      },
-
-      "usedInRecipes": []
-
-    },
-
-    {
-
-      "id": 5004,
-
-      "name": "Yellow Ink",
-
-      "icon": null,
-
-      "description": "Ink made from Daffodil flowers",
-
-      "type": "crafted_material",
-
-      "recipe": {
-
-        "workStation": "alchemy_station",
-
-        "artisanSkill": "alchemy",
-
-        "components": [
-
-          { "id": 7001, "name": "Water", "quantity": 1 },
-
-          { "id": 7004, "name": "Daffodil Powder", "quantity": 1 }
-
-        ]
-
-      },
-
-      "usedInRecipes": []
-
-    },
-
-    {
-
-      "id": 5005,
-
-      "name": "Black Ink",
-
-      "icon": null,
-
-      "description": "Journeyman‑tier ink",
-
-      "type": "crafted_material",
-
-      "recipe": {
-
-        "workStation": "alchemy_station",
-
-        "artisanSkill": "alchemy",
-
-        "components": [
-
-          { "id": 7001, "name": "Water", "quantity": 1 },
-
-          { "id": 7005, "name": "Grave Lily Powder", "quantity": 1 },
-
-          { "id": 7006, "name": "Ethanol", "quantity": 1 }
-
-        ]
-
-      },
-
-      "usedInRecipes": []
-
+      "id": 2005,
+      "name": "Basalt Mold Casting",
+      "artisanSkill": "stonemasonry",
+      "workStation": "stone_casting_bench",
+      "components": [
+        { "id": 1002, "name": "Basalt Ore", "quantity": 1 }
+      ]
     }
+  ],
 
+  "crafted_components": [
+    {
+      "id": 2100,
+      "name": "Magic Powder",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1003, "name": "Essence Crystal", "quantity": 1 },
+        { "id": 1004, "name": "Snowdrop", "quantity": 1 },
+        { "id": 1005, "name": "Daffodil", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2101,
+      "name": "Red Ink",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1007, "name": "Water", "quantity": 1 },
+        { "id": 1008, "name": "Ruby", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2102,
+      "name": "White Ink",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1007, "name": "Water", "quantity": 1 },
+        { "id": 2003, "name": "Snowdrop Powder", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2103,
+      "name": "Yellow Ink",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1007, "name": "Water", "quantity": 1 },
+        { "id": 2004, "name": "Daffodil Powder", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2104,
+      "name": "Black Ink",
+      "artisanSkill": "alchemy",
+      "workStation": "alchemy_station",
+      "components": [
+        { "id": 1007, "name": "Water", "quantity": 1 },
+        { "id": 2002, "name": "Grave Lily Powder", "quantity": 1 },
+        { "id": 1009, "name": "Ethanol", "quantity": 1 }
+      ]
+    }
+  ],
+
+  "crafted_items": [
+    {
+      "id": 2500,
+      "name": "Novice Scroll of Intelligence",
+      "artisanSkill": "scribe",
+      "workStation": "scribe_bench",
+      "components": [
+        { "id": 2000, "name": "Oak Timber", "quantity": 1 },
+        { "id": 2100, "name": "Magic Powder", "quantity": 1 },
+        { "id": 2101, "name": "Red Ink", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2501,
+      "name": "Apprentice Scroll of Intelligence",
+      "artisanSkill": "scribe",
+      "workStation": "scribe_bench",
+      "components": [
+        { "id": 2000, "name": "Oak Timber", "quantity": 1 },
+        { "id": 2100, "name": "Magic Powder", "quantity": 1 },
+        { "id": 2102, "name": "White Ink", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2502,
+      "name": "Novice Mining Pickaxe",
+      "artisanSkill": "mining",
+      "workStation": "mining_bench",
+      "components": [
+        { "id": 2000, "name": "Oak Timber", "quantity": 10 },
+        { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
+        { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2503,
+      "name": "Novice Lumberjacking Axe",
+      "artisanSkill": "lumberjacking",
+      "workStation": "lumberjacking_bench",
+      "components": [
+        { "id": 2000, "name": "Oak Timber", "quantity": 10 },
+        { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
+        { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2504,
+      "name": "Novice Herbalism Sickle",
+      "artisanSkill": "herbalism",
+      "workStation": "herbalism_tools_bench",
+      "components": [
+        { "id": 2000, "name": "Oak Timber", "quantity": 5 },
+        { "id": 2001, "name": "Copper Fragments", "quantity": 5 },
+        { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+      ]
+    },
+    {
+      "id": 2505,
+      "name": "Apprentice Herbalism Sickle",
+      "artisanSkill": "herbalism",
+      "workStation": "herbalism_tools_bench",
+      "components": [
+        { "id": 2000, "name": "Oak Timber", "quantity": 10 },
+        { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
+        { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+      ]
+    }
   ]
-
 }
-
