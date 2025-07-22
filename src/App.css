@@ -5,9 +5,10 @@
 
 body {
   margin: 0;
-  font-family: 'Courier New', monospace;
-  background-color: #0f0f23;
-  color: #cccccc;
+  padding: 20px;
+  font-family: "Courier New", monospace;
+  background-color: #b8cfff;
+  color: #131313;
 }
 
 /* Button hover effects */
@@ -29,12 +30,13 @@ body {
     margin: 10px;
     padding: 15px;
   }
-  
+
   .button-section {
     flex-direction: column;
   }
-  
-  .calculate-button, .clear-button {
+
+  .calculate-button,
+  .clear-button {
     width: 100%;
   }
 }
