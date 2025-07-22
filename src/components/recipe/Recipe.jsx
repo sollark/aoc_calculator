@@ -1,30 +1,11 @@
 import React, { useState } from "react";
 import CraftComponent from "../craftComponent/CraftComponent";
 
-const TestRecipeData = {
-  id: 5001,
-  name: "Magic Powder",
-  icon: null,
-  description: "Base powder used in scrolls and inks",
-  type: "crafted_material",
-  recipe: {
-    workStation: "alchemy_station",
-    artisanSkill: "alchemy",
-    components: [
-      { id: 6001, name: "Essence Crystal", quantity: 1 },
-      { id: 6002, name: "Snowdrop", quantity: 1 },
-      { id: 6003, name: "Daffodil", quantity: 1 },
-    ],
-  },
-
-  usedInRecipes: [],
-};
-
 const Recipe = ({ recipeData }) => {
-  if (!recipeData) recipeData = TestRecipeData;
-    console.log(`Recipe component rendered with data:`, recipeData);
+  // if (!recipeData) recipeData = TestRecipeData;
+  console.log(`Recipe component initialized with data:`, recipeData);
 
-  const [quantity, setQuantity] = useState(5);
+  const [quantity, setQuantity] = useState(0);
   const [playerHasQuantity, setPlayerHasQuantity] = useState(0);
 
   const {
@@ -33,8 +14,6 @@ const Recipe = ({ recipeData }) => {
     description,
     recipe: { workStation, artisanSkill, components = [] } = {},
   } = recipeData;
-
-  console.log(`components:`, components);
 
   return (
     <div className="recipe">
