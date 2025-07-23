@@ -1,0 +1,49 @@
+.manageable-recipe-list__clear-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.manageable-recipe-list__clear-btn:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.manageable-recipe-list__clear-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.manageable-recipe-list__remove-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.manageable-recipe-list__remove-btn:hover {
+  background-color: #c82333;
+  transform: scale(1.1);
+}
+
+.manageable-recipe-list__remove-btn:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}

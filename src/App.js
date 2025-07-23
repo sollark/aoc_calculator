@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import recipesData from "./db/recipes.json";
 import RecipeSelector from "./components/recipeSelector/RecipeSelector";
-import RecipeList from "./components/recipeList/RecipeList";
+import ManageableRecipeList from "./components/manageableRecipeList/ManageableRecipeList";
+import ComponentList from "./components/componentList/ComponentList";
+import "./App.css";
 
 function App() {
   const [selectedRecipe, setSelectedRecipe] = useState("");
   const [recipeList, setRecipeList] = useState([]);
+  const [allComponents, setAllComponents] = useState([]);
 
   // Combine all recipe arrays from your JSON structure
   const allRecipes = React.useMemo(
@@ -56,6 +59,14 @@ function App() {
     setSelectedRecipe(recipeName);
   };
 
+  // Extract all components from recipes
+  useEffect(() => {
+    const components = recipeList.flatMap(
+      (recipe) => recipe.recipe?.components || []
+    );
+    setAllComponents(components);
+  }, [recipeList]);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -64,8 +75,6 @@ function App() {
       </header>
 
       <main>
-        <p>Welcome to the AoC Calculator!</p>
-
         <RecipeSelector
           recipes={allRecipes}
           selectedRecipe={selectedRecipe}
@@ -74,10 +83,16 @@ function App() {
           recipeListCount={recipeList.length}
         />
 
-        <RecipeList
+        <ManageableRecipeList
           recipes={recipeList}
           onRemoveRecipe={handleRemoveRecipe}
           onClearList={handleClearList}
+        />
+
+        <ComponentList
+          components={allComponents}
+          title="All Required Components"
+          showQuantityControls={false}
         />
       </main>
 
