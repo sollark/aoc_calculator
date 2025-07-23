@@ -1,0 +1,64 @@
+.craft-component {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.craft-component--readonly {
+  background-color: #f0f0f0;
+}
+
+.craft-component__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.craft-component__name {
+  font-weight: 600;
+  color: #333;
+}
+
+.craft-component__id {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: monospace;
+}
+
+.craft-component__quantity,
+.craft-component__current {
+  font-size: 0.875rem;
+  color: #555;
+}
+
+.craft-component__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.craft-component__btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.craft-component__btn:hover {
+  background-color: #f0f0f0;
+}
+
+.craft-component__input {
+  width: 60px;
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}

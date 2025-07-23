@@ -20,11 +20,10 @@ function App() {
     []
   );
 
-  // Create lookup maps for easy access
+  // Create lookup maps for easy access - ID ONLY
   const recipeLookup = React.useMemo(() => {
     const lookup = {};
     allRecipes.forEach((recipe) => {
-      lookup[recipe.name] = recipe;
       lookup[recipe.id] = recipe;
     });
     return lookup;
@@ -33,13 +32,31 @@ function App() {
   const rawComponentsLookup = React.useMemo(() => {
     const lookup = {};
     recipesData.raw_components.forEach((component) => {
-      lookup[component.name] = component;
       lookup[component.id] = component;
     });
     return lookup;
   }, []);
 
+  // Helper function to find recipe by name (since UI still uses names)
+  const findRecipeByName = (name) => {
+    return allRecipes.find((recipe) => recipe.name === name);
+  };
+
+  // Helper function to find raw component by name
+  const findRawComponentByName = (name) => {
+    return recipesData.raw_components.find(
+      (component) => component.name === name
+    );
+  };
+
+  // Helper function to find recipe by component name (for processing lookup)
+  const findProcessingRecipeByOutputName = (componentName) => {
+    return allRecipes.find((recipe) => recipe.name === componentName);
+  };
+
   console.log("All Recipes Loaded:", allRecipes);
+  console.log("Recipe Lookup Map:", recipeLookup);
+  console.log("Raw Components Lookup Map:", rawComponentsLookup);
 
   useEffect(() => {
     if (allRecipes.length > 0 && !selectedRecipe) {
@@ -59,20 +76,22 @@ function App() {
       return [];
     }
 
-    // Check if it's already a raw component
-    if (rawComponentsLookup[componentName]) {
+    // Check if it's already a raw component (by name lookup)
+    const rawComponent = findRawComponentByName(componentName);
+    if (rawComponent) {
       return [
         {
-          id: rawComponentsLookup[componentName].id,
+          id: rawComponent.id,
           name: componentName,
           quantity: quantity,
           isRaw: true,
+          description: rawComponent.description,
         },
       ];
     }
 
-    // Check if it's a processing recipe
-    const processingRecipe = recipeLookup[componentName];
+    // Check if it's a processing recipe (find by output name)
+    const processingRecipe = findProcessingRecipeByOutputName(componentName);
     if (processingRecipe && processingRecipe.recipe?.components) {
       visited.add(componentName);
 
@@ -105,12 +124,12 @@ function App() {
     ];
   };
 
-  // Function to consolidate duplicate components
+  // Function to consolidate duplicate components by ID
   const consolidateComponents = (components) => {
     const consolidated = {};
 
     components.forEach((component) => {
-      const key = component.name;
+      const key = component.id; // Use ID as key instead of name
       if (consolidated[key]) {
         consolidated[key].quantity += component.quantity;
       } else {
@@ -155,7 +174,7 @@ function App() {
   }, [recipeList, recipeLookup, rawComponentsLookup]);
 
   const handleAddRecipe = () => {
-    const recipeData = allRecipes.find((r) => r.name === selectedRecipe);
+    const recipeData = findRecipeByName(selectedRecipe); // Use helper function
     if (recipeData) {
       const isAlreadyAdded = recipeList.some(
         (recipe) => recipe.id === recipeData.id

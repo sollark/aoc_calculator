@@ -11,21 +11,22 @@ const ComponentList = ({
   showBreakdown = false,
   onQuantityChange,
 }) => {
+  // Use component ID as key instead of name for state management
   const [componentQuantities, setComponentQuantities] = useState({});
 
-  const handleQuantityChange = (componentName, newQuantity) => {
+  const handleQuantityChange = (componentId, componentName, newQuantity) => {
     setComponentQuantities((prev) => ({
       ...prev,
-      [componentName]: newQuantity,
+      [componentId]: newQuantity, // Use ID as key
     }));
 
     if (onQuantityChange) {
-      onQuantityChange(componentName, newQuantity);
+      onQuantityChange(componentId, componentName, newQuantity);
     }
   };
 
   const renderComponentItem = (component) => {
-    const currentQuantity = componentQuantities[component.name] || 0;
+    const currentQuantity = componentQuantities[component.id] || 0;
     const isComplete = currentQuantity >= component.quantity;
     const shortage = Math.max(0, component.quantity - currentQuantity);
 
@@ -37,6 +38,7 @@ const ComponentList = ({
       >
         <div className="component-list__item-header">
           <CraftComponent
+            id={component.id}
             name={component.name}
             quantity={component.quantity}
             currentQuantity={currentQuantity}
@@ -77,18 +79,18 @@ const ComponentList = ({
     );
   };
 
-  // Calculate totals for summary
+  // Calculate totals for summary - use component.id for lookups
   const totalComponents = components.length;
   const completedComponents = components.filter(
     (component) =>
-      (componentQuantities[component.name] || 0) >= component.quantity
+      (componentQuantities[component.id] || 0) >= component.quantity
   ).length;
   const totalQuantityNeeded = components.reduce(
     (sum, component) => sum + component.quantity,
     0
   );
   const totalQuantityHave = components.reduce(
-    (sum, component) => sum + (componentQuantities[component.name] || 0),
+    (sum, component) => sum + (componentQuantities[component.id] || 0),
     0
   );
 

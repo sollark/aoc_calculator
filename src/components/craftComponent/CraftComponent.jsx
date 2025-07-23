@@ -1,36 +1,76 @@
-import React, { useState } from "react";
-import NumberInput from "../forms/NumberInput";
+import React from "react";
+import PropTypes from "prop-types";
+import "./craftComponent.css";
 
-const CraftComponent = ({ name, quantity, onQuantityChange }) => {
-  console.log(`CraftComponent rendered`);
-  console.log(`Component: ${name}, Quantity: ${quantity}`);
-
-  const [owned, setOwned] = useState(0);
-
-  const handleChange = (newValue) => {
-
-    const value = Math.max(0, Math.min(quantity, newValue)); // Ensure value is within bounds
-    setOwned(value);
-
-    onQuantityChange(name, value);
+const CraftComponent = ({
+  id,
+  name,
+  quantity,
+  currentQuantity = 0,
+  onQuantityChange,
+  readOnly = false,
+}) => {
+  const handleQuantityChange = (newValue) => {
+    if (onQuantityChange && !readOnly) {
+      onQuantityChange(id, name, newValue); // Pass both ID and name
+    }
   };
 
   return (
-    <div style={{ marginBottom: "1rem" }}>
-      <span>
-        {name} (needed: {quantity})
-      </span>
-      <NumberInput
-        id={`${name}-quantity`}
-        min={0}
-        max={quantity}
-        value={owned}
-        onChange={handleChange}
-        style={{ marginLeft: "1rem", width: "60px" }}
-      />
-      <span style={{ marginLeft: "0.5rem" }}>(you have: {owned})</span>
+    <div
+      className={`craft-component ${
+        readOnly ? "craft-component--readonly" : ""
+      }`}
+    >
+      <div className="craft-component__info">
+        <span className="craft-component__name">{name}</span>
+        <span className="craft-component__id">ID: {id}</span>
+        <span className="craft-component__quantity">Required: {quantity}</span>
+        {!readOnly && (
+          <span className="craft-component__current">
+            Have: {currentQuantity}
+          </span>
+        )}
+      </div>
+
+      {!readOnly && onQuantityChange && (
+        <div className="craft-component__controls">
+          <button
+            onClick={() =>
+              handleQuantityChange(Math.max(0, currentQuantity - 1))
+            }
+            className="craft-component__btn craft-component__btn--decrease"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            value={currentQuantity}
+            onChange={(e) =>
+              handleQuantityChange(parseInt(e.target.value) || 0)
+            }
+            className="craft-component__input"
+            min="0"
+          />
+          <button
+            onClick={() => handleQuantityChange(currentQuantity + 1)}
+            className="craft-component__btn craft-component__btn--increase"
+          >
+            +
+          </button>
+        </div>
+      )}
     </div>
   );
+};
+
+CraftComponent.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  name: PropTypes.string.isRequired,
+  quantity: PropTypes.number.isRequired,
+  currentQuantity: PropTypes.number,
+  onQuantityChange: PropTypes.func,
+  readOnly: PropTypes.bool,
 };
 
 export default CraftComponent;
