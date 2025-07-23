@@ -1,30 +1,106 @@
 .component-list {
-  margin-top: 1rem;
+  margin-top: 2rem;
 }
 
 .component-list__item-content {
   width: 100%;
+  transition: all 0.3s ease;
 }
 
-.component-list__nested-recipe {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border-left: 4px solid #0066cc;
+.component-list__item-content--complete {
+  background-color: #f8fff8;
+  border-left: 4px solid #28a745;
 }
 
-.component-list__nested-recipe h4 {
-  margin: 0 0 0.5rem 0;
+.component-list__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.component-list__item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.component-list__badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.component-list__badge--raw {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.component-list__badge--unknown {
+  background-color: #fff3e0;
+  color: #f57c00;
+  border: 1px solid #ffcc02;
+}
+
+.component-list__shortage {
+  color: #dc3545;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.component-list__complete {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.component-list__description {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.component-list__summary {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.component-list__summary-stat {
   color: #495057;
-  font-size: 1rem;
+  font-weight: 500;
 }
 
-.component-list__nested-recipe .component-list {
-  margin-top: 0.5rem;
+.component-list__summary-complete {
+  color: #28a745;
+  font-weight: 600;
 }
 
-.component-list__nested-recipe .base-list__item {
-  background-color: #ffffff;
-  border: 1px solid #e9ecef;
+/* Responsive design */
+@media (max-width: 768px) {
+  .component-list__item-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .component-list__item-meta {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .component-list__summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
 }

@@ -4,12 +4,11 @@ import recipesData from "./db/recipes.json";
 import RecipeSelector from "./components/recipeSelector/RecipeSelector";
 import ManageableRecipeList from "./components/manageableRecipeList/ManageableRecipeList";
 import ComponentList from "./components/componentList/ComponentList";
-import "./App.css";
 
 function App() {
   const [selectedRecipe, setSelectedRecipe] = useState("");
   const [recipeList, setRecipeList] = useState([]);
-  const [allComponents, setAllComponents] = useState([]);
+  const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
   // Combine all recipe arrays from your JSON structure
   const allRecipes = React.useMemo(
@@ -21,6 +20,25 @@ function App() {
     []
   );
 
+  // Create lookup maps for easy access
+  const recipeLookup = React.useMemo(() => {
+    const lookup = {};
+    allRecipes.forEach((recipe) => {
+      lookup[recipe.name] = recipe;
+      lookup[recipe.id] = recipe;
+    });
+    return lookup;
+  }, [allRecipes]);
+
+  const rawComponentsLookup = React.useMemo(() => {
+    const lookup = {};
+    recipesData.raw_components.forEach((component) => {
+      lookup[component.name] = component;
+      lookup[component.id] = component;
+    });
+    return lookup;
+  }, []);
+
   console.log("All Recipes Loaded:", allRecipes);
 
   useEffect(() => {
@@ -29,10 +47,116 @@ function App() {
     }
   }, [allRecipes, selectedRecipe]);
 
+  // Function to recursively break down components to raw materials
+  const breakDownToRawComponents = (
+    componentName,
+    quantity = 1,
+    visited = new Set()
+  ) => {
+    // Prevent infinite recursion
+    if (visited.has(componentName)) {
+      console.warn(`Circular dependency detected for ${componentName}`);
+      return [];
+    }
+
+    // Check if it's already a raw component
+    if (rawComponentsLookup[componentName]) {
+      return [
+        {
+          id: rawComponentsLookup[componentName].id,
+          name: componentName,
+          quantity: quantity,
+          isRaw: true,
+        },
+      ];
+    }
+
+    // Check if it's a processing recipe
+    const processingRecipe = recipeLookup[componentName];
+    if (processingRecipe && processingRecipe.recipe?.components) {
+      visited.add(componentName);
+
+      const rawComponents = [];
+      processingRecipe.recipe.components.forEach((component) => {
+        const subComponents = breakDownToRawComponents(
+          component.name,
+          component.quantity * quantity,
+          new Set(visited)
+        );
+        rawComponents.push(...subComponents);
+      });
+
+      visited.delete(componentName);
+      return rawComponents;
+    }
+
+    // If not found in raw or processing, treat as unknown raw component
+    console.warn(
+      `Component ${componentName} not found in raw or processing recipes`
+    );
+    return [
+      {
+        id: `unknown_${componentName}`,
+        name: componentName,
+        quantity: quantity,
+        isRaw: false,
+        isUnknown: true,
+      },
+    ];
+  };
+
+  // Function to consolidate duplicate components
+  const consolidateComponents = (components) => {
+    const consolidated = {};
+
+    components.forEach((component) => {
+      const key = component.name;
+      if (consolidated[key]) {
+        consolidated[key].quantity += component.quantity;
+      } else {
+        consolidated[key] = { ...component };
+      }
+    });
+
+    return Object.values(consolidated).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  };
+
+  // Extract and process all components from recipes
+  useEffect(() => {
+    if (recipeList.length === 0) {
+      setConsolidatedComponents([]);
+      return;
+    }
+
+    console.log(
+      "Processing components for recipes:",
+      recipeList.map((r) => r.name)
+    );
+
+    const allRawComponents = [];
+
+    recipeList.forEach((recipe) => {
+      if (recipe.recipe?.components) {
+        recipe.recipe.components.forEach((component) => {
+          const rawComponents = breakDownToRawComponents(
+            component.name,
+            component.quantity
+          );
+          allRawComponents.push(...rawComponents);
+        });
+      }
+    });
+
+    const consolidated = consolidateComponents(allRawComponents);
+    console.log("Consolidated raw components:", consolidated);
+    setConsolidatedComponents(consolidated);
+  }, [recipeList, recipeLookup, rawComponentsLookup]);
+
   const handleAddRecipe = () => {
     const recipeData = allRecipes.find((r) => r.name === selectedRecipe);
     if (recipeData) {
-      // Check if recipe is already in the list
       const isAlreadyAdded = recipeList.some(
         (recipe) => recipe.id === recipeData.id
       );
@@ -42,7 +166,6 @@ function App() {
         setRecipeList([...recipeList, recipeData]);
       } else {
         console.log("Recipe already in list:", recipeData.name);
-        // Could show a toast notification here
       }
     }
   };
@@ -58,14 +181,6 @@ function App() {
   const handleRecipeChange = (recipeName) => {
     setSelectedRecipe(recipeName);
   };
-
-  // Extract all components from recipes
-  useEffect(() => {
-    const components = recipeList.flatMap(
-      (recipe) => recipe.recipe?.components || []
-    );
-    setAllComponents(components);
-  }, [recipeList]);
 
   return (
     <div className="App">
@@ -90,9 +205,10 @@ function App() {
         />
 
         <ComponentList
-          components={allComponents}
-          title="All Required Components"
-          showQuantityControls={false}
+          components={consolidatedComponents}
+          title="Raw Materials Required"
+          showQuantityControls={true}
+          showBreakdown={true}
         />
       </main>
 

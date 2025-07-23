@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import BaseRecipeList from "../baseRecipeList/BaseRecipeList";
 import CraftComponent from "../craftComponent/CraftComponent";
@@ -8,27 +8,102 @@ const ComponentList = ({
   components,
   title = "Required Components",
   showQuantityControls = false,
+  showBreakdown = false,
   onQuantityChange,
 }) => {
-  const renderComponentItem = (component) => (
-    <div className="component-list__item-content">
-      <CraftComponent
-        name={component.name}
-        quantity={component.quantity}
-        currentQuantity={component.currentQuantity || 0}
-        onQuantityChange={showQuantityControls ? onQuantityChange : undefined}
-        readOnly={!showQuantityControls}
-      />
-      {component.recipe && (
-        <div className="component-list__nested-recipe">
-          <h4>Recipe for {component.name}:</h4>
-          <ComponentList
-            components={component.recipe.components || []}
-            title={null}
-            showQuantityControls={showQuantityControls}
-            onQuantityChange={onQuantityChange}
+  const [componentQuantities, setComponentQuantities] = useState({});
+
+  const handleQuantityChange = (componentName, newQuantity) => {
+    setComponentQuantities((prev) => ({
+      ...prev,
+      [componentName]: newQuantity,
+    }));
+
+    if (onQuantityChange) {
+      onQuantityChange(componentName, newQuantity);
+    }
+  };
+
+  const renderComponentItem = (component) => {
+    const currentQuantity = componentQuantities[component.name] || 0;
+    const isComplete = currentQuantity >= component.quantity;
+    const shortage = Math.max(0, component.quantity - currentQuantity);
+
+    return (
+      <div
+        className={`component-list__item-content ${
+          isComplete ? "component-list__item-content--complete" : ""
+        }`}
+      >
+        <div className="component-list__item-header">
+          <CraftComponent
+            name={component.name}
+            quantity={component.quantity}
+            currentQuantity={currentQuantity}
+            onQuantityChange={
+              showQuantityControls ? handleQuantityChange : undefined
+            }
+            readOnly={!showQuantityControls}
           />
+
+          {showBreakdown && (
+            <div className="component-list__item-meta">
+              {component.isRaw && (
+                <span className="component-list__badge component-list__badge--raw">
+                  Raw Material
+                </span>
+              )}
+              {component.isUnknown && (
+                <span className="component-list__badge component-list__badge--unknown">
+                  Unknown
+                </span>
+              )}
+              {shortage > 0 && (
+                <span className="component-list__shortage">
+                  Need: {shortage}
+                </span>
+              )}
+              {isComplete && (
+                <span className="component-list__complete">✓ Complete</span>
+              )}
+            </div>
+          )}
         </div>
+
+        {component.description && (
+          <p className="component-list__description">{component.description}</p>
+        )}
+      </div>
+    );
+  };
+
+  // Calculate totals for summary
+  const totalComponents = components.length;
+  const completedComponents = components.filter(
+    (component) =>
+      (componentQuantities[component.name] || 0) >= component.quantity
+  ).length;
+  const totalQuantityNeeded = components.reduce(
+    (sum, component) => sum + component.quantity,
+    0
+  );
+  const totalQuantityHave = components.reduce(
+    (sum, component) => sum + (componentQuantities[component.name] || 0),
+    0
+  );
+
+  const headerActions = showBreakdown && totalComponents > 0 && (
+    <div className="component-list__summary">
+      <span className="component-list__summary-stat">
+        Components: {completedComponents}/{totalComponents}
+      </span>
+      <span className="component-list__summary-stat">
+        Total: {totalQuantityHave}/{totalQuantityNeeded}
+      </span>
+      {completedComponents === totalComponents && (
+        <span className="component-list__summary-complete">
+          🎉 All Complete!
+        </span>
       )}
     </div>
   );
@@ -36,9 +111,10 @@ const ComponentList = ({
   return (
     <BaseRecipeList
       items={components}
-      title={title ? `${title} (${components.length} components)` : null}
+      title={title ? `${title} (${totalComponents} unique materials)` : null}
       emptyMessage="No components required."
       className="component-list"
+      headerActions={headerActions}
       itemRenderer={renderComponentItem}
     />
   );
@@ -47,17 +123,17 @@ const ComponentList = ({
 ComponentList.propTypes = {
   components: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       name: PropTypes.string.isRequired,
       quantity: PropTypes.number.isRequired,
-      currentQuantity: PropTypes.number,
-      recipe: PropTypes.shape({
-        components: PropTypes.array,
-      }),
+      isRaw: PropTypes.bool,
+      isUnknown: PropTypes.bool,
+      description: PropTypes.string,
     })
   ).isRequired,
   title: PropTypes.string,
   showQuantityControls: PropTypes.bool,
+  showBreakdown: PropTypes.bool,
   onQuantityChange: PropTypes.func,
 };
 
