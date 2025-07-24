@@ -2,15 +2,6 @@
   "raw_components": [
     {
       "id": 1000,
-      "name": "Oak Wood",
-      "description": "Raw logs from oak trees",
-      "gathering": {
-        "skill": "lumberjacking",
-        "skillLevel": "novice"
-      }
-    },
-    {
-      "id": 1001,
       "name": "Copper Ore",
       "description": "Raw copper from mining",
       "gathering": {
@@ -19,7 +10,7 @@
       }
     },
     {
-      "id": 1002,
+      "id": 1001,
       "name": "Basalt Ore",
       "description": "Raw basalt from mining",
       "gathering": {
@@ -28,52 +19,7 @@
       }
     },
     {
-      "id": 1003,
-      "name": "Essence Crystal",
-      "description": "Magical essence crystal purchased from vendors",
-      "gathering": {
-        "skill": "vendor",
-        "skillLevel": "none"
-      }
-    },
-    {
-      "id": 1004,
-      "name": "Snowdrop",
-      "description": "Herb used in alchemy",
-      "gathering": {
-        "skill": "herbalism",
-        "skillLevel": "novice"
-      }
-    },
-    {
-      "id": 1005,
-      "name": "Daffodil",
-      "description": "Herb used in alchemy",
-      "gathering": {
-        "skill": "herbalism",
-        "skillLevel": "novice"
-      }
-    },
-    {
-      "id": 1006,
-      "name": "Grave Lily",
-      "description": "Herb used in alchemy",
-      "gathering": {
-        "skill": "herbalism",
-        "skillLevel": "apprentice"
-      }
-    },
-    {
-      "id": 1007,
-      "name": "Water",
-      "description": "Basic alchemy component",
-      "gathering": {
-        "skill": "vendor",
-        "skillLevel": "none"
-      }
-    },
-    {
-      "id": 1008,
+      "id": 1002,
       "name": "Ruby",
       "description": "Gemstone for inks",
       "gathering": {
@@ -82,7 +28,124 @@
       }
     },
     {
-      "id": 1009,
+      "id": 1100,
+      "name": "Oak Wood",
+      "description": "Raw logs from oak trees",
+      "gathering": {
+        "skill": "lumberjacking",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1200,
+      "name": "Snowdrop",
+      "description": "Herb used in alchemy",
+      "gathering": {
+        "skill": "herbalism",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1201,
+      "name": "Daffodil",
+      "description": "Herb used in alchemy",
+      "gathering": {
+        "skill": "herbalism",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1202,
+      "name": "Grave Lily",
+      "description": "Herb used in alchemy",
+      "gathering": {
+        "skill": "herbalism",
+        "skillLevel": "apprentice"
+      }
+    },
+    {
+      "id": 1300,
+      "name": "Salmon",
+      "description": "Fresh fish caught from rivers",
+      "gathering": {
+        "skill": "fishing",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1301,
+      "name": "Trout",
+      "description": "Common freshwater fish",
+      "gathering": {
+        "skill": "fishing",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1302,
+      "name": "Golden Bass",
+      "description": "Rare fish found in deep waters",
+      "gathering": {
+        "skill": "fishing",
+        "skillLevel": "apprentice"
+      }
+    },
+    {
+      "id": 1400,
+      "name": "Rabbit Hide",
+      "description": "Leather from hunted rabbits",
+      "gathering": {
+        "skill": "hunting",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1401,
+      "name": "Deer Hide",
+      "description": "Quality leather from deer",
+      "gathering": {
+        "skill": "hunting",
+        "skillLevel": "apprentice"
+      }
+    },
+    {
+      "id": 1402,
+      "name": "Wolf Pelt",
+      "description": "Thick fur from wolves",
+      "gathering": {
+        "skill": "hunting",
+        "skillLevel": "journeyman"
+      }
+    },
+    {
+      "id": 1403,
+      "name": "Bear Bone",
+      "description": "Strong bones from bears",
+      "gathering": {
+        "skill": "hunting",
+        "skillLevel": "journeyman"
+      }
+    },
+    {
+      "id": 1500,
+      "name": "Essence Crystal",
+      "description": "Magical essence crystal purchased from vendors",
+      "gathering": {
+        "skill": "vendor",
+        "skillLevel": "none"
+      }
+    },
+    {
+      "id": 1501,
+      "name": "Water",
+      "description": "Basic alchemy component",
+      "gathering": {
+        "skill": "vendor",
+        "skillLevel": "none"
+      }
+    },
+    {
+      "id": 1502,
       "name": "Ethanol",
       "description": "Alcohol used in advanced inks",
       "gathering": {
@@ -95,34 +158,6 @@
   "intermediate_recipes": [
     {
       "id": 2000,
-      "name": "Oak Timber",
-      "description": "Processes Oak Wood into Oak Timber",
-      "requirements": {
-        "playerLevel": 0,
-        "artisanLevel": "novice"
-      },
-      "recipe": {
-        "artisanSkill": "lumber_milling",
-        "workStation": "lumber_milling_bench",
-        "components": [{ "id": 1000, "name": "Oak Wood", "quantity": 1 }]
-      }
-    },
-    {
-      "id": 2001,
-      "name": "Copper Fragments",
-      "description": "Smelts Copper Ore into Copper Fragments",
-      "requirements": {
-        "playerLevel": 0,
-        "artisanLevel": "novice"
-      },
-      "recipe": {
-        "artisanSkill": "metalworking",
-        "workStation": "metalworking_bench",
-        "components": [{ "id": 1001, "name": "Copper Ore", "quantity": 1 }]
-      }
-    },
-    {
-      "id": 2002,
       "name": "Grave Lily Powder",
       "description": "Turns Grave Lily into Grave Lily Powder",
       "requirements": {
@@ -132,11 +167,11 @@
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
-        "components": [{ "id": 1006, "name": "Grave Lily", "quantity": 1 }]
+        "components": [{ "id": 1202, "name": "Grave Lily", "quantity": 1 }]
       }
     },
     {
-      "id": 2003,
+      "id": 2001,
       "name": "Snowdrop Powder",
       "description": "Turns Snowdrop into Snowdrop Powder",
       "requirements": {
@@ -146,11 +181,11 @@
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
-        "components": [{ "id": 1004, "name": "Snowdrop", "quantity": 1 }]
+        "components": [{ "id": 1200, "name": "Snowdrop", "quantity": 1 }]
       }
     },
     {
-      "id": 2004,
+      "id": 2002,
       "name": "Daffodil Powder",
       "description": "Turns Daffodil into Daffodil Powder",
       "requirements": {
@@ -160,21 +195,7 @@
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
-        "components": [{ "id": 1005, "name": "Daffodil", "quantity": 1 }]
-      }
-    },
-    {
-      "id": 2005,
-      "name": "Basalt Weapon Mold",
-      "description": "Processes Basalt Ore into a Weapon Mold",
-      "requirements": {
-        "playerLevel": 0,
-        "artisanLevel": "novice"
-      },
-      "recipe": {
-        "artisanSkill": "stonemasonry",
-        "workStation": "stone_casting_bench",
-        "components": [{ "id": 1002, "name": "Basalt Ore", "quantity": 1 }]
+        "components": [{ "id": 1201, "name": "Daffodil", "quantity": 1 }]
       }
     },
     {
@@ -189,9 +210,9 @@
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
         "components": [
-          { "id": 1003, "name": "Essence Crystal", "quantity": 1 },
-          { "id": 1004, "name": "Snowdrop", "quantity": 1 },
-          { "id": 1005, "name": "Daffodil", "quantity": 1 }
+          { "id": 1500, "name": "Essence Crystal", "quantity": 1 },
+          { "id": 1200, "name": "Snowdrop", "quantity": 1 },
+          { "id": 1201, "name": "Daffodil", "quantity": 1 }
         ]
       }
     },
@@ -207,8 +228,8 @@
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
         "components": [
-          { "id": 1007, "name": "Water", "quantity": 1 },
-          { "id": 1008, "name": "Ruby", "quantity": 1 }
+          { "id": 1501, "name": "Water", "quantity": 1 },
+          { "id": 1002, "name": "Ruby", "quantity": 1 }
         ]
       }
     },
@@ -224,8 +245,8 @@
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
         "components": [
-          { "id": 1007, "name": "Water", "quantity": 1 },
-          { "id": 2003, "name": "Snowdrop Powder", "quantity": 1 }
+          { "id": 1501, "name": "Water", "quantity": 1 },
+          { "id": 2001, "name": "Snowdrop Powder", "quantity": 1 }
         ]
       }
     },
@@ -241,8 +262,8 @@
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
         "components": [
-          { "id": 1007, "name": "Water", "quantity": 1 },
-          { "id": 2004, "name": "Daffodil Powder", "quantity": 1 }
+          { "id": 1501, "name": "Water", "quantity": 1 },
+          { "id": 2002, "name": "Daffodil Powder", "quantity": 1 }
         ]
       }
     },
@@ -258,9 +279,111 @@
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
         "components": [
-          { "id": 1007, "name": "Water", "quantity": 1 },
-          { "id": 2002, "name": "Grave Lily Powder", "quantity": 1 },
-          { "id": 1009, "name": "Ethanol", "quantity": 1 }
+          { "id": 1501, "name": "Water", "quantity": 1 },
+          { "id": 2000, "name": "Grave Lily Powder", "quantity": 1 },
+          { "id": 1502, "name": "Ethanol", "quantity": 1 }
+        ]
+      }
+    },
+    {
+      "id": 2200,
+      "name": "Oak Timber",
+      "description": "Processes Oak Wood into Oak Timber",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "lumber_milling",
+        "workStation": "lumber_milling_bench",
+        "components": [{ "id": 1100, "name": "Oak Wood", "quantity": 1 }]
+      }
+    },
+    {
+      "id": 2400,
+      "name": "Copper Fragments",
+      "description": "Smelts Copper Ore into Copper Fragments",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "metalworking",
+        "workStation": "metalworking_bench",
+        "components": [{ "id": 1000, "name": "Copper Ore", "quantity": 1 }]
+      }
+    },
+    {
+      "id": 2600,
+      "name": "Basalt Weapon Mold",
+      "description": "Processes Basalt Ore into a Weapon Mold",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "stonemasonry",
+        "workStation": "stone_casting_bench",
+        "components": [{ "id": 1001, "name": "Basalt Ore", "quantity": 1 }]
+      }
+    },
+    {
+      "id": 2800,
+      "name": "Processed Rabbit Hide",
+      "description": "Tanned rabbit hide ready for crafting",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "leatherworking",
+        "workStation": "tanning_rack",
+        "components": [{ "id": 1400, "name": "Rabbit Hide", "quantity": 1 }]
+      }
+    },
+    {
+      "id": 2801,
+      "name": "Processed Deer Hide",
+      "description": "Quality tanned deer hide",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "apprentice"
+      },
+      "recipe": {
+        "artisanSkill": "leatherworking",
+        "workStation": "tanning_rack",
+        "components": [{ "id": 1401, "name": "Deer Hide", "quantity": 1 }]
+      }
+    },
+    {
+      "id": 3200,
+      "name": "Grilled Salmon",
+      "description": "Cooked salmon providing nourishment",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "cooking",
+        "workStation": "cooking_fire",
+        "components": [{ "id": 1300, "name": "Salmon", "quantity": 1 }]
+      }
+    },
+    {
+      "id": 3201,
+      "name": "Fish Stew",
+      "description": "Hearty stew made with multiple fish types",
+      "requirements": {
+        "playerLevel": 5,
+        "artisanLevel": "apprentice"
+      },
+      "recipe": {
+        "artisanSkill": "cooking",
+        "workStation": "cooking_fire",
+        "components": [
+          { "id": 1300, "name": "Salmon", "quantity": 1 },
+          { "id": 1301, "name": "Trout", "quantity": 1 },
+          { "id": 1501, "name": "Water", "quantity": 1 }
         ]
       }
     }
@@ -268,43 +391,111 @@
 
   "crafted_items": [
     {
-      "id": 2500,
-      "name": "Novice Scroll of Intelligence",
-      "description": "Basic intelligence-boosting scroll",
+      "id": 4000,
+      "name": "Novice Iron Sword",
+      "description": "Basic sword crafted by weaponsmiths",
       "requirements": {
         "playerLevel": 5,
         "artisanLevel": "novice"
       },
       "recipe": {
-        "artisanSkill": "scribe",
-        "workStation": "scribe_bench",
+        "artisanSkill": "weaponsmithing",
+        "workStation": "weaponsmithing_bench",
         "components": [
-          { "id": 2000, "name": "Oak Timber", "quantity": 1 },
-          { "id": 2100, "name": "Magic Powder", "quantity": 1 },
-          { "id": 2101, "name": "Red Ink", "quantity": 1 }
+          { "id": 2200, "name": "Oak Timber", "quantity": 5 },
+          { "id": 2400, "name": "Copper Fragments", "quantity": 15 },
+          { "id": 2600, "name": "Basalt Weapon Mold", "quantity": 1 }
         ]
       }
     },
     {
-      "id": 2501,
-      "name": "Apprentice Scroll of Intelligence",
-      "description": "Stronger intelligence scroll crafted by apprentices",
+      "id": 4400,
+      "name": "Novice Hunting Bow",
+      "description": "Basic bow for hunting animals",
       "requirements": {
-        "playerLevel": 12,
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "bowcraft",
+        "workStation": "bowcraft_bench",
+        "components": [
+          { "id": 2200, "name": "Oak Timber", "quantity": 8 },
+          { "id": 2800, "name": "Processed Rabbit Hide", "quantity": 2 }
+        ]
+      }
+    },
+    {
+      "id": 6000,
+      "name": "Novice Plate Helmet",
+      "description": "Heavy helmet crafted by armorsmiths",
+      "requirements": {
+        "playerLevel": 8,
         "artisanLevel": "apprentice"
       },
       "recipe": {
-        "artisanSkill": "scribe",
-        "workStation": "scribe_bench",
+        "artisanSkill": "armorsmithing",
+        "workStation": "armorsmithing_bench",
         "components": [
-          { "id": 2000, "name": "Oak Timber", "quantity": 1 },
-          { "id": 2100, "name": "Magic Powder", "quantity": 1 },
-          { "id": 2102, "name": "White Ink", "quantity": 1 }
+          { "id": 2400, "name": "Copper Fragments", "quantity": 12 },
+          { "id": 2600, "name": "Basalt Weapon Mold", "quantity": 1 }
         ]
       }
     },
     {
-      "id": 2502,
+      "id": 6300,
+      "name": "Novice Leather Boots",
+      "description": "Light leather boots for protection",
+      "requirements": {
+        "playerLevel": 2,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "leatherworking",
+        "workStation": "tanning_rack",
+        "components": [
+          { "id": 2800, "name": "Processed Rabbit Hide", "quantity": 3 },
+          { "id": 2400, "name": "Copper Fragments", "quantity": 2 }
+        ]
+      }
+    },
+    {
+      "id": 6301,
+      "name": "Apprentice Leather Vest",
+      "description": "Quality leather vest for improved protection",
+      "requirements": {
+        "playerLevel": 8,
+        "artisanLevel": "apprentice"
+      },
+      "recipe": {
+        "artisanSkill": "leatherworking",
+        "workStation": "tanning_rack",
+        "components": [
+          { "id": 2801, "name": "Processed Deer Hide", "quantity": 5 },
+          { "id": 2400, "name": "Copper Fragments", "quantity": 8 },
+          { "id": 1403, "name": "Bear Bone", "quantity": 2 }
+        ]
+      }
+    },
+    {
+      "id": 6600,
+      "name": "Novice Cloth Robe",
+      "description": "Basic cloth robe for magic users",
+      "requirements": {
+        "playerLevel": 3,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "tailoring",
+        "workStation": "tailoring_bench",
+        "components": [
+          { "id": 1402, "name": "Wolf Pelt", "quantity": 3 },
+          { "id": 2001, "name": "Snowdrop Powder", "quantity": 1 }
+        ]
+      }
+    },
+    {
+      "id": 7000,
       "name": "Novice Mining Pickaxe",
       "description": "Entry-level pickaxe for mining",
       "requirements": {
@@ -315,14 +506,14 @@
         "artisanSkill": "weaponsmithing",
         "workStation": "weaponsmithing_bench",
         "components": [
-          { "id": 2000, "name": "Oak Timber", "quantity": 10 },
-          { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
-          { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+          { "id": 2200, "name": "Oak Timber", "quantity": 10 },
+          { "id": 2400, "name": "Copper Fragments", "quantity": 10 },
+          { "id": 2600, "name": "Basalt Weapon Mold", "quantity": 1 }
         ]
       }
     },
     {
-      "id": 2503,
+      "id": 7001,
       "name": "Novice Lumberjacking Axe",
       "description": "Basic axe for cutting down trees",
       "requirements": {
@@ -333,16 +524,16 @@
         "artisanSkill": "weaponsmithing",
         "workStation": "weaponsmithing_bench",
         "components": [
-          { "id": 2000, "name": "Oak Timber", "quantity": 10 },
-          { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
-          { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+          { "id": 2200, "name": "Oak Timber", "quantity": 10 },
+          { "id": 2400, "name": "Copper Fragments", "quantity": 10 },
+          { "id": 2600, "name": "Basalt Weapon Mold", "quantity": 1 }
         ]
       }
     },
     {
-      "id": 2504,
-      "name": "Novice Herbalism Sickle",
-      "description": "Tool used for basic herb gathering",
+      "id": 7002,
+      "name": "Novice Fishing Rod",
+      "description": "Basic fishing rod for catching fish",
       "requirements": {
         "playerLevel": 0,
         "artisanLevel": "novice"
@@ -351,27 +542,79 @@
         "artisanSkill": "weaponsmithing",
         "workStation": "weaponsmithing_bench",
         "components": [
-          { "id": 2000, "name": "Oak Timber", "quantity": 5 },
-          { "id": 2001, "name": "Copper Fragments", "quantity": 5 },
-          { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+          { "id": 2200, "name": "Oak Timber", "quantity": 5 },
+          { "id": 2400, "name": "Copper Fragments", "quantity": 2 }
         ]
       }
     },
     {
-      "id": 2505,
-      "name": "Apprentice Herbalism Sickle",
-      "description": "Stronger sickle for skilled herbalists",
+      "id": 7100,
+      "name": "Novice Scroll of Intelligence",
+      "description": "Basic intelligence-boosting scroll",
       "requirements": {
-        "playerLevel": 0,
+        "playerLevel": 5,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "scribe",
+        "workStation": "scribe_bench",
+        "components": [
+          { "id": 2200, "name": "Oak Timber", "quantity": 1 },
+          { "id": 2100, "name": "Magic Powder", "quantity": 1 },
+          { "id": 2101, "name": "Red Ink", "quantity": 1 }
+        ]
+      }
+    },
+    {
+      "id": 7101,
+      "name": "Apprentice Scroll of Intelligence",
+      "description": "Stronger intelligence scroll crafted by apprentices",
+      "requirements": {
+        "playerLevel": 12,
         "artisanLevel": "apprentice"
       },
       "recipe": {
-        "artisanSkill": "weaponsmithing",
-        "workStation": "weaponsmithing_bench",
+        "artisanSkill": "scribe",
+        "workStation": "scribe_bench",
         "components": [
-          { "id": 2000, "name": "Oak Timber", "quantity": 10 },
-          { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
-          { "id": 2005, "name": "Basalt Weapon Mold", "quantity": 1 }
+          { "id": 2200, "name": "Oak Timber", "quantity": 1 },
+          { "id": 2100, "name": "Magic Powder", "quantity": 1 },
+          { "id": 2102, "name": "White Ink", "quantity": 1 }
+        ]
+      }
+    },
+    {
+      "id": 7300,
+      "name": "Trail Rations",
+      "description": "Preserved food for long journeys",
+      "requirements": {
+        "playerLevel": 3,
+        "artisanLevel": "novice"
+      },
+      "recipe": {
+        "artisanSkill": "cooking",
+        "workStation": "cooking_fire",
+        "components": [
+          { "id": 3200, "name": "Grilled Salmon", "quantity": 2 },
+          { "id": 1200, "name": "Snowdrop", "quantity": 1 }
+        ]
+      }
+    },
+    {
+      "id": 7600,
+      "name": "Stamina Potion",
+      "description": "Restores stamina using fish-based ingredients",
+      "requirements": {
+        "playerLevel": 6,
+        "artisanLevel": "apprentice"
+      },
+      "recipe": {
+        "artisanSkill": "alchemy",
+        "workStation": "alchemy_station",
+        "components": [
+          { "id": 1501, "name": "Water", "quantity": 1 },
+          { "id": 1302, "name": "Golden Bass", "quantity": 1 },
+          { "id": 1200, "name": "Snowdrop", "quantity": 1 }
         ]
       }
     }
@@ -401,6 +644,14 @@
     { "skill": "mining", "description": "Extract ores and stones from nodes" },
     { "skill": "lumberjacking", "description": "Harvest wood from trees" },
     { "skill": "herbalism", "description": "Gather herbs and plants" },
+    {
+      "skill": "fishing",
+      "description": "Catch fish from rivers, lakes, and oceans"
+    },
+    {
+      "skill": "hunting",
+      "description": "Hunt animals for hides, bones, and meat"
+    },
     { "skill": "vendor", "description": "Items purchased from vendors" }
   ]
 }
