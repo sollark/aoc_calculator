@@ -1,62 +1,36 @@
+import recipesData from "../../db/recipes.json";
 import { RecipeError } from "./errors.js";
 
-// In-memory storage for browser environment
-let recipesCache = null;
-
-// Base path for recipes file
-const RECIPES_FILE_PATH = "/src/db/recipes.json";
+// Use imported data directly
+let recipesCache = recipesData;
 
 /**
- * Read recipes from JSON file (browser-compatible)
- * @returns {Promise<Object>} Complete recipes data
- * @throws {RecipeError} If file cannot be read or parsed
+ * Read recipes synchronously (using imported data)
+ * @returns {Object} Complete recipes data
  */
 export const readRecipes = async () => {
-  try {
-    // Return cached data if available
-    if (recipesCache) {
-      return recipesCache;
-    }
-
-    // Fetch from public directory in browser
-    const response = await fetch(RECIPES_FILE_PATH);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    recipesCache = data;
-    return data;
-  } catch (error) {
-    console.error("Error reading recipes file:", error);
-    throw new RecipeError(`Failed to read recipes file: ${error.message}`);
-  }
+  return recipesCache;
 };
 
 /**
- * Read recipes synchronously (using cached data)
+ * Read recipes synchronously (using imported data)
  * @returns {Object} Complete recipes data
- * @throws {RecipeError} If no cached data available
  */
 export const readRecipesSync = () => {
-  if (!recipesCache) {
-    throw new RecipeError("No recipes data cached. Call readRecipes() first.");
-  }
   return recipesCache;
 };
 
 /**
  * Write recipes data (browser environment - downloads as file)
- * @param {Object} recipesData - Complete recipes data to write
+ * @param {Object} newRecipesData - Complete recipes data to write
  */
-export const writeRecipes = (recipesData) => {
+export const writeRecipes = (newRecipesData) => {
   try {
     // Update cache
-    recipesCache = recipesData;
+    recipesCache = newRecipesData;
 
     // In browser environment, trigger download
-    const jsonString = JSON.stringify(recipesData, null, 2);
+    const jsonString = JSON.stringify(newRecipesData, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
@@ -76,22 +50,18 @@ export const writeRecipes = (recipesData) => {
 };
 
 /**
- * Check if recipes are loaded in cache
- * @returns {boolean} True if recipes are cached
+ * Check if recipes are loaded
+ * @returns {boolean} True if recipes are available
  */
 export const recipesFileExists = () => {
   return recipesCache !== null;
 };
 
 /**
- * Create backup of recipes data (browser environment)
+ * Create backup of recipes data
  * @returns {string} Backup file name
  */
 export const createBackup = () => {
-  if (!recipesCache) {
-    throw new RecipeError("No recipes data to backup. Load recipes first.");
-  }
-
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupFileName = `recipes-backup-${timestamp}.json`;
@@ -111,29 +81,6 @@ export const createBackup = () => {
     return backupFileName;
   } catch (error) {
     throw new RecipeError(`Failed to create backup: ${error.message}`);
-  }
-};
-
-/**
- * Clear cached recipes data
- */
-export const clearCache = () => {
-  recipesCache = null;
-};
-
-/**
- * Load recipes data from uploaded file
- * @param {File} file - File object from file input
- * @returns {Promise<Object>} Loaded recipes data
- */
-export const loadRecipesFromFile = async (file) => {
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    recipesCache = data;
-    return data;
-  } catch (error) {
-    throw new RecipeError(`Failed to load recipes from file: ${error.message}`);
   }
 };
 

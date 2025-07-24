@@ -120,7 +120,14 @@ export const isRecipeAlreadyAdded = (recipeList, recipeData) => {
  */
 export const createRecipeValidator =
   (findRecipeByIdentifier) => (recipeList, recipeName) => {
+    console.log("Validating recipe:", recipeName);
+    console.log(
+      "findRecipeByIdentifier function:",
+      typeof findRecipeByIdentifier
+    );
+
     const recipeData = findRecipeByIdentifier(recipeName);
+    console.log("Found recipe data:", recipeData);
 
     if (!recipeData) {
       console.warn(`Recipe not found: ${recipeName}`);

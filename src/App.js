@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./App.css";
-import recipesData from "./db/recipes.json";
 import RecipeManagement from "./components/recipeManagement/RecipeManagement";
 import ComponentList from "./components/componentList/ComponentList";
 import { useRecipeData } from "./hooks/useRecipeData";
@@ -15,15 +14,28 @@ function App() {
   const [recipeList, setRecipeList] = useState([]);
   const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
-  // Create all recipes array from JSON structure
-  const allRecipes = useMemo(
-    () => [...recipesData.intermediate_recipes, ...recipesData.crafted_items],
-    []
-  );
-
   // Initialize recipe data and services using custom hook
   const { recipeServiceFunctions, isLoading, error, isInitialized } =
     useRecipeData();
+
+  // Get all recipes from the service instead of direct import
+  const allRecipes = useMemo(() => {
+    if (!recipeServiceFunctions) return [];
+
+    try {
+      // Get all recipes using the service
+      const recipes = recipeServiceFunctions.getAllRecipes();
+      // Filter to only intermediate and crafted items (excluding raw components)
+      return recipes.filter(
+        (recipe) =>
+          recipe.type === "intermediate_recipes" ||
+          recipe.type === "crafted_items"
+      );
+    } catch (error) {
+      console.error("Error getting recipes:", error);
+      return [];
+    }
+  }, [recipeServiceFunctions]);
 
   // Create state management functions
   const stateManagers = useMemo(() => {
@@ -35,9 +47,11 @@ function App() {
 
   // Initialize default recipe selection
   useEffect(() => {
-    const defaultRecipe = initializeDefaultRecipe(allRecipes, selectedRecipe);
-    if (defaultRecipe !== selectedRecipe) {
-      setSelectedRecipe(defaultRecipe);
+    if (allRecipes.length > 0) {
+      const defaultRecipe = initializeDefaultRecipe(allRecipes, selectedRecipe);
+      if (defaultRecipe !== selectedRecipe) {
+        setSelectedRecipe(defaultRecipe);
+      }
     }
   }, [allRecipes, selectedRecipe]);
 
@@ -73,8 +87,14 @@ function App() {
       setRecipeList(result.newList);
     } else {
       console.warn("Failed to add recipe:", result.message);
+      // Log more details for debugging
+      console.log("Selected recipe:", selectedRecipe);
+      console.log(
+        "Available recipes:",
+        allRecipes.map((r) => r.name)
+      );
     }
-  }, [stateManagers, recipeList, selectedRecipe]);
+  }, [stateManagers, recipeList, selectedRecipe, allRecipes]);
 
   const handleRemoveRecipe = useCallback(
     (recipeId) => {
@@ -96,7 +116,7 @@ function App() {
 
   // Log initialization data (development only)
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && allRecipes.length > 0) {
       logInitializationData(allRecipes, {}, {});
     }
   }, [allRecipes, isInitialized]);
@@ -124,6 +144,15 @@ function App() {
     return (
       <div className="App">
         <div>Error: Could not initialize application state</div>
+      </div>
+    );
+  }
+
+  // Show message if no recipes available
+  if (allRecipes.length === 0) {
+    return (
+      <div className="App">
+        <div>No recipes available. Please check your recipe data.</div>
       </div>
     );
   }
