@@ -4,7 +4,6 @@ import recipesData from "./db/recipes.json";
 import RecipeManagement from "./components/recipeManagement/RecipeManagement";
 import ComponentList from "./components/componentList/ComponentList";
 import { useRecipeData } from "./hooks/useRecipeData";
-import { useRecipeManagement } from "./hooks/useRecipeManagement";
 import {
   initializeDefaultRecipe,
   logInitializationData,
@@ -16,38 +15,23 @@ function App() {
   const [recipeList, setRecipeList] = useState([]);
   const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
-  // ✅ FIXED: Update to match new JSON structure
+  // Create all recipes array from JSON structure
   const allRecipes = useMemo(
     () => [...recipesData.intermediate_recipes, ...recipesData.crafted_items],
     []
   );
 
   // Initialize recipe data and services using custom hook
-  const { recipeLookups, rawComponentLookups, recipeServiceFunctions } =
-    useRecipeData(allRecipes, recipesData.raw_components);
+  const { recipeServiceFunctions, isLoading, error, isInitialized } =
+    useRecipeData();
 
   // Create state management functions
-  const stateManagers = useMemo(
-    () => createStateManagers(setRecipeList, recipeServiceFunctions),
-    [recipeServiceFunctions]
-  );
-
-  // Get recipe management handlers
-  const {
-    handleAddRecipe,
-    handleRemoveRecipe,
-    handleClearList,
-    handleRecipeChange,
-  } = useRecipeManagement(
-    stateManagers,
-    recipeServiceFunctions,
-    setSelectedRecipe
-  );
-
-  // Log initialization data (development only)
-  useEffect(() => {
-    logInitializationData(allRecipes, recipeLookups, rawComponentLookups);
-  }, [allRecipes, recipeLookups, rawComponentLookups]);
+  const stateManagers = useMemo(() => {
+    if (!isInitialized || !recipeServiceFunctions) {
+      return null;
+    }
+    return createStateManagers(recipeServiceFunctions);
+  }, [isInitialized, recipeServiceFunctions]);
 
   // Initialize default recipe selection
   useEffect(() => {
@@ -59,15 +43,90 @@ function App() {
 
   // Process recipe list to extract consolidated components
   useEffect(() => {
-    const consolidated =
-      recipeServiceFunctions.processRecipeListToRawComponents(recipeList);
-    setConsolidatedComponents(consolidated);
+    if (recipeServiceFunctions && recipeList.length > 0) {
+      try {
+        const consolidated =
+          recipeServiceFunctions.processRecipeListToRawComponents(recipeList);
+        setConsolidatedComponents(consolidated);
+      } catch (error) {
+        console.error("Error processing recipe list:", error);
+        setConsolidatedComponents([]);
+      }
+    } else {
+      setConsolidatedComponents([]);
+    }
   }, [recipeList, recipeServiceFunctions]);
 
-  // Memoized add recipe handler for performance
-  const handleAddRecipeToList = useCallback(() => {
-    handleAddRecipe(recipeList, selectedRecipe);
-  }, [handleAddRecipe, recipeList, selectedRecipe]);
+  // Recipe management handlers
+  const handleRecipeChange = useCallback((recipeName) => {
+    setSelectedRecipe(recipeName);
+  }, []);
+
+  const handleAddRecipe = useCallback(() => {
+    if (!stateManagers || !selectedRecipe) return;
+
+    const result = stateManagers.recipeList.addRecipe(
+      recipeList,
+      selectedRecipe
+    );
+    if (result.success) {
+      setRecipeList(result.newList);
+    } else {
+      console.warn("Failed to add recipe:", result.message);
+    }
+  }, [stateManagers, recipeList, selectedRecipe]);
+
+  const handleRemoveRecipe = useCallback(
+    (recipeId) => {
+      if (!stateManagers) return;
+
+      const updatedList = stateManagers.recipeList.removeRecipe(
+        recipeList,
+        recipeId
+      );
+      setRecipeList(updatedList);
+    },
+    [stateManagers, recipeList]
+  );
+
+  const handleClearList = useCallback(() => {
+    setRecipeList([]);
+    setConsolidatedComponents([]);
+  }, []);
+
+  // Log initialization data (development only)
+  useEffect(() => {
+    if (isInitialized) {
+      logInitializationData(allRecipes, {}, {});
+    }
+  }, [allRecipes, isInitialized]);
+
+  // Show loading state
+  if (isLoading || !isInitialized) {
+    return (
+      <div className="App">
+        <div>Loading recipes...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="App">
+        <div>Error loading recipes: {error}</div>
+      </div>
+    );
+  }
+
+  // Show error if state managers couldn't be created
+  if (!stateManagers) {
+    return (
+      <div className="App">
+        <div>Error: Could not initialize application state</div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
@@ -82,7 +141,7 @@ function App() {
           selectedRecipe={selectedRecipe}
           recipeList={recipeList}
           onRecipeChange={handleRecipeChange}
-          onAddRecipe={handleAddRecipeToList}
+          onAddRecipe={handleAddRecipe}
           onRemoveRecipe={handleRemoveRecipe}
           onClearList={handleClearList}
           stateManagers={stateManagers}

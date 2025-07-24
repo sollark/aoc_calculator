@@ -1,3 +1,5 @@
+import { consolidateComponentsById } from "../utils/recipeUtils.js";
+
 /**
  * Pure function to initialize default recipe selection
  * @param {Array} allRecipes - All available recipes
@@ -56,24 +58,147 @@ export const createRecipeRemovalHandler =
   };
 
 /**
- * Compose state management functions
- * @param {Function} setRecipeList - State setter function
+ * Create state management functions
  * @param {Object} recipeServiceFunctions - Recipe service functions
  * @returns {Object} Composed state management functions
  */
-export const createStateManagers = (setRecipeList, recipeServiceFunctions) => {
-  const handleRecipeAddition = createRecipeAdditionHandler(setRecipeList);
-  const handleRecipeRemoval = createRecipeRemovalHandler(
-    recipeServiceFunctions.removeRecipeFromList,
-    setRecipeList
-  );
+export const createStateManagers = (recipeServiceFunctions) => {
+  // Add null check at the beginning
+  if (!recipeServiceFunctions) {
+    console.error("recipeServiceFunctions is null or undefined");
+    return null;
+  }
 
+  // Destructure with default values to prevent errors
+  const {
+    removeRecipeFromList = () => [],
+    processRecipeListToRawComponents = () => [],
+    addRecipeToList = () => ({
+      success: false,
+      message: "Function not available",
+    }),
+  } = recipeServiceFunctions;
+
+  // Recipe list management
+  const createRecipeListManager = () => {
+    return {
+      addRecipe: (currentList, recipeName) => {
+        try {
+          const result = addRecipeToList(currentList, recipeName);
+          if (result.success) {
+            return {
+              success: true,
+              newList: [...currentList, result.data],
+              message: result.message,
+            };
+          }
+          return {
+            success: false,
+            newList: currentList,
+            message: result.message,
+          };
+        } catch (error) {
+          console.error("Error adding recipe:", error);
+          return {
+            success: false,
+            newList: currentList,
+            message: "Error adding recipe",
+          };
+        }
+      },
+
+      removeRecipe: (currentList, recipeId) => {
+        try {
+          return removeRecipeFromList(currentList, recipeId);
+        } catch (error) {
+          console.error("Error removing recipe:", error);
+          return currentList;
+        }
+      },
+
+      processToRawComponents: (recipeList) => {
+        try {
+          return processRecipeListToRawComponents(recipeList);
+        } catch (error) {
+          console.error("Error processing recipe list:", error);
+          return [];
+        }
+      },
+    };
+  };
+
+  // Raw components management
+  const createRawComponentsManager = () => {
+    return {
+      updateQuantity: (components, componentId, newQuantity) => {
+        return components.map((component) =>
+          component.id === componentId
+            ? { ...component, quantity: Math.max(0, newQuantity) }
+            : component
+        );
+      },
+
+      addCustomComponent: (components, componentData) => {
+        const newComponent = {
+          id: `custom_${Date.now()}`,
+          name: componentData.name,
+          quantity: componentData.quantity || 1,
+          isCustom: true,
+          ...componentData,
+        };
+        return [...components, newComponent];
+      },
+
+      removeComponent: (components, componentId) => {
+        return components.filter((component) => component.id !== componentId);
+      },
+
+      consolidateComponents: (components) => {
+        try {
+          return consolidateComponentsById(components);
+        } catch (error) {
+          console.error("Error consolidating components:", error);
+          return components;
+        }
+      },
+    };
+  };
+
+  // Application state management
+  const createAppStateManager = () => {
+    return {
+      resetToDefaults: () => ({
+        recipeList: [],
+        rawComponents: [],
+        activeTab: "recipes",
+        filters: {},
+      }),
+
+      updateFilters: (currentState, newFilters) => ({
+        ...currentState,
+        filters: { ...currentState.filters, ...newFilters },
+      }),
+
+      switchTab: (currentState, tabName) => ({
+        ...currentState,
+        activeTab: tabName,
+      }),
+    };
+  };
+
+  // Return all managers
   return {
-    handleRecipeAddition,
-    handleRecipeRemoval,
-    clearRecipeList: () => setRecipeList([]),
+    recipeList: createRecipeListManager(),
+    rawComponents: createRawComponentsManager(),
+    appState: createAppStateManager(),
+
+    // Utility functions
+    utils: {
+      isServiceReady: () => Boolean(recipeServiceFunctions),
+      getAvailableFunctions: () => Object.keys(recipeServiceFunctions || {}),
+    },
   };
 };
 
-// Default export for the main factory function
+// Default export
 export default createStateManagers;
