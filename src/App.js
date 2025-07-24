@@ -1,162 +1,71 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React from "react";
 import "./App.css";
 import RecipeManagement from "./components/recipeManagement/RecipeManagement";
 import ComponentList from "./components/componentList/ComponentList";
+import { LoadingState } from "./components/ui/LoadingState";
+import { ErrorState } from "./components/ui/ErrorState";
 import { useRecipeData } from "./hooks/useRecipeData";
-import {
-  initializeDefaultRecipe,
-  logInitializationData,
-  createStateManagers,
-} from "./services/appStateService";
+import { useRecipeFiltering } from "./hooks/useRecipeFiltering";
+import { useRecipeSelection } from "./hooks/useRecipeSelection";
+import { useRecipeList } from "./hooks/useRecipeList";
+import { useComponentCalculation } from "./hooks/useComponentCalculation";
+import { useAppState } from "./hooks/useAppState";
 
+/**
+ * Main application component for the AoC Calculator
+ * Manages recipe selection, recipe list, and component calculation
+ */
 function App() {
-  const [selectedRecipe, setSelectedRecipe] = useState("");
-  const [recipeList, setRecipeList] = useState([]);
-  const [consolidatedComponents, setConsolidatedComponents] = useState([]);
-
-  // Initialize recipe data and services using custom hook
+  // Initialize recipe data and services
   const { recipeServiceFunctions, isLoading, error, isInitialized } =
     useRecipeData();
 
-  // Get all recipes from the service instead of direct import
-  const allRecipes = useMemo(() => {
-    if (!recipeServiceFunctions) return [];
+  // Initialize state managers
+  const stateManagers = useAppState(recipeServiceFunctions, isInitialized);
 
-    try {
-      // Get all recipes using the service
-      const recipes = recipeServiceFunctions.getAllRecipes();
-      // Filter to only intermediate and crafted items (excluding raw components)
-      return recipes.filter(
-        (recipe) =>
-          recipe.type === "intermediate_recipes" ||
-          recipe.type === "crafted_items"
-      );
-    } catch (error) {
-      console.error("Error getting recipes:", error);
-      return [];
-    }
-  }, [recipeServiceFunctions]);
+  // Filter available recipes
+  const availableRecipes = useRecipeFiltering(recipeServiceFunctions);
 
-  // Create state management functions
-  const stateManagers = useMemo(() => {
-    if (!isInitialized || !recipeServiceFunctions) {
-      return null;
-    }
-    return createStateManagers(recipeServiceFunctions);
-  }, [isInitialized, recipeServiceFunctions]);
+  // Manage recipe selection
+  const { selectedRecipe, handleRecipeChange } =
+    useRecipeSelection(availableRecipes);
 
-  // Initialize default recipe selection
-  useEffect(() => {
-    if (allRecipes.length > 0) {
-      const defaultRecipe = initializeDefaultRecipe(allRecipes, selectedRecipe);
-      if (defaultRecipe !== selectedRecipe) {
-        setSelectedRecipe(defaultRecipe);
-      }
-    }
-  }, [allRecipes, selectedRecipe]);
+  // Manage recipe list
+  const { recipeList, handleAddRecipe, handleRemoveRecipe, handleClearList } =
+    useRecipeList(stateManagers);
 
-  // Process recipe list to extract consolidated components
-  useEffect(() => {
-    if (recipeServiceFunctions && recipeList.length > 0) {
-      try {
-        const consolidated =
-          recipeServiceFunctions.processRecipeListToRawComponents(recipeList);
-        setConsolidatedComponents(consolidated);
-      } catch (error) {
-        console.error("Error processing recipe list:", error);
-        setConsolidatedComponents([]);
-      }
-    } else {
-      setConsolidatedComponents([]);
-    }
-  }, [recipeList, recipeServiceFunctions]);
-
-  // Recipe management handlers
-  const handleRecipeChange = useCallback((recipeName) => {
-    setSelectedRecipe(recipeName);
-  }, []);
-
-  const handleAddRecipe = useCallback(() => {
-    if (!stateManagers || !selectedRecipe) return;
-
-    const result = stateManagers.recipeList.addRecipe(
-      recipeList,
-      selectedRecipe
-    );
-    if (result.success) {
-      setRecipeList(result.newList);
-    } else {
-      console.warn("Failed to add recipe:", result.message);
-      // Log more details for debugging
-      console.log("Selected recipe:", selectedRecipe);
-      console.log(
-        "Available recipes:",
-        allRecipes.map((r) => r.name)
-      );
-    }
-  }, [stateManagers, recipeList, selectedRecipe, allRecipes]);
-
-  const handleRemoveRecipe = useCallback(
-    (recipeId) => {
-      if (!stateManagers) return;
-
-      const updatedList = stateManagers.recipeList.removeRecipe(
-        recipeList,
-        recipeId
-      );
-      setRecipeList(updatedList);
-    },
-    [stateManagers, recipeList]
+  // Calculate consolidated components
+  const consolidatedComponents = useComponentCalculation(
+    recipeList,
+    recipeServiceFunctions
   );
 
-  const handleClearList = useCallback(() => {
-    setRecipeList([]);
-    setConsolidatedComponents([]);
-  }, []);
-
-  // Log initialization data (development only)
-  useEffect(() => {
-    if (isInitialized && allRecipes.length > 0) {
-      logInitializationData(allRecipes, {}, {});
-    }
-  }, [allRecipes, isInitialized]);
-
-  // Show loading state
+  // Loading state
   if (isLoading || !isInitialized) {
-    return (
-      <div className="App">
-        <div>Loading recipes...</div>
-      </div>
-    );
+    return <LoadingState message="Loading recipes..." />;
   }
 
-  // Show error state
+  // Error states
   if (error) {
-    return (
-      <div className="App">
-        <div>Error loading recipes: {error}</div>
-      </div>
-    );
+    return <ErrorState message={`Loading recipes: ${error}`} />;
   }
 
-  // Show error if state managers couldn't be created
   if (!stateManagers) {
+    return <ErrorState message="Could not initialize application state" />;
+  }
+
+  if (availableRecipes.length === 0) {
     return (
-      <div className="App">
-        <div>Error: Could not initialize application state</div>
-      </div>
+      <ErrorState message="No recipes available. Please check your recipe data." />
     );
   }
 
-  // Show message if no recipes available
-  if (allRecipes.length === 0) {
-    return (
-      <div className="App">
-        <div>No recipes available. Please check your recipe data.</div>
-      </div>
-    );
-  }
+  // Enhanced add recipe handler that includes selected recipe
+  const handleAddRecipeWithSelection = () => {
+    handleAddRecipe(selectedRecipe);
+  };
 
+  // Main application render
   return (
     <div className="App">
       <header className="App-header">
@@ -166,11 +75,11 @@ function App() {
 
       <main className="App-main">
         <RecipeManagement
-          allRecipes={allRecipes}
+          allRecipes={availableRecipes}
           selectedRecipe={selectedRecipe}
           recipeList={recipeList}
           onRecipeChange={handleRecipeChange}
-          onAddRecipe={handleAddRecipe}
+          onAddRecipe={handleAddRecipeWithSelection}
           onRemoveRecipe={handleRemoveRecipe}
           onClearList={handleClearList}
           stateManagers={stateManagers}
