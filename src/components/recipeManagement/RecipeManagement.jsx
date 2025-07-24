@@ -1,85 +1,57 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import RecipeSelector from "../recipeSelector/RecipeSelector";
 import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList";
+import { useRecipeSelection } from "../../hooks/useRecipeSelection";
+import { useRecipeList } from "../../hooks/useRecipeList";
+import { useRecipeStats } from "../../hooks/useRecipeStats";
+import { useRecipeValidation } from "../../hooks/useRecipeValidation";
 import "./recipeManagement.css";
 
 /**
- * Higher-order component for managing recipe selection and list operations
- * Combines recipe selector and manageable recipe list with their interactions
+ * Self-contained recipe management component
+ * Manages its own state for recipe selection and list operations
  *
  * @param {Object} props - Component props
  * @param {Array} props.allRecipes - All available recipes
- * @param {string} props.selectedRecipe - Currently selected recipe name
- * @param {Array} props.recipeList - Current list of selected recipes
- * @param {Function} props.onRecipeChange - Handler for recipe selection change
- * @param {Function} props.onAddRecipe - Handler for adding recipe to list
- * @param {Function} props.onRemoveRecipe - Handler for removing recipe from list
- * @param {Function} props.onClearList - Handler for clearing entire recipe list
  * @param {Object} props.stateManagers - State management functions
  * @param {Object} props.recipeServiceFunctions - Recipe service functions
+ * @param {Function} props.onRecipeListChange - Callback when recipe list changes
  * @returns {JSX.Element} Recipe management interface
  */
 const RecipeManagement = ({
   allRecipes,
-  selectedRecipe,
-  recipeList,
-  onRecipeChange,
-  onAddRecipe,
-  onRemoveRecipe,
-  onClearList,
   stateManagers,
   recipeServiceFunctions,
+  onRecipeListChange,
 }) => {
-  /**
-   * Memoized recipe statistics for performance optimization
-   */
-  const recipeStats = useMemo(() => {
-    const totalRecipes = allRecipes.length;
-    const selectedCount = recipeList.length;
-    const availableCount = totalRecipes - selectedCount;
+  // Internal state management using custom hooks
+  const { selectedRecipe, handleRecipeChange } = useRecipeSelection(allRecipes);
+  const {
+    recipeList,
+    handleAddRecipe: addRecipe,
+    handleRemoveRecipe,
+    handleClearList: clearList,
+  } = useRecipeList(stateManagers);
 
-    // Calculate unique recipes vs duplicates
-    const uniqueRecipeIds = new Set(recipeList.map((recipe) => recipe.id));
-    const duplicateCount = selectedCount - uniqueRecipeIds.size;
-
-    return {
-      totalRecipes,
-      selectedCount,
-      availableCount,
-      duplicateCount,
-      hasRecipes: selectedCount > 0,
-      canAddMore: availableCount > 0,
-    };
-  }, [allRecipes.length, recipeList]);
-
-  /**
-   * Memoized validation for recipe operations
-   */
-  const recipeValidation = useMemo(() => {
-    const canAddSelected = Boolean(
-      selectedRecipe &&
-        !recipeServiceFunctions.isRecipeAlreadyAdded(
-          recipeList,
-          allRecipes.find((recipe) => recipe.name === selectedRecipe)
-        )
-    );
-
-    return {
-      canAddSelected,
-      canClearList: recipeStats.hasRecipes,
-      hasSelection: Boolean(selectedRecipe),
-    };
-  }, [
+  // Statistics and validation
+  const recipeStats = useRecipeStats(allRecipes, recipeList);
+  const recipeValidation = useRecipeValidation(
     selectedRecipe,
     recipeList,
-    recipeServiceFunctions,
     allRecipes,
-    recipeStats.hasRecipes,
-  ]);
+    recipeServiceFunctions
+  );
+
+  // Notify parent component when recipe list changes
+  React.useEffect(() => {
+    if (onRecipeListChange) {
+      onRecipeListChange(recipeList);
+    }
+  }, [recipeList, onRecipeListChange]);
 
   /**
-   * Enhanced add recipe handler with validation and feedback
+   * Enhanced add recipe handler with validation
    */
   const handleAddRecipeWithValidation = useCallback(() => {
     if (!recipeValidation.canAddSelected) {
@@ -87,24 +59,23 @@ const RecipeManagement = ({
       return;
     }
 
-    onAddRecipe();
-  }, [onAddRecipe, recipeValidation.canAddSelected]);
+    addRecipe(selectedRecipe);
+  }, [addRecipe, selectedRecipe, recipeValidation.canAddSelected]);
 
   /**
-   * Enhanced clear list handler with confirmation logic
+   * Enhanced clear list handler with confirmation
    */
   const handleClearListWithConfirmation = useCallback(() => {
     if (recipeStats.selectedCount > 0) {
-      // In a real app, you might want to show a confirmation dialog
       const shouldClear = window.confirm(
         `Are you sure you want to clear all ${recipeStats.selectedCount} recipes?`
       );
 
       if (shouldClear) {
-        onClearList();
+        clearList();
       }
     }
-  }, [onClearList, recipeStats.selectedCount]);
+  }, [clearList, recipeStats.selectedCount]);
 
   /**
    * Render recipe selector section
@@ -116,7 +87,7 @@ const RecipeManagement = ({
         <RecipeSelector
           recipes={allRecipes}
           selectedRecipe={selectedRecipe}
-          onRecipeChange={onRecipeChange}
+          onRecipeChange={handleRecipeChange}
           onAddRecipe={handleAddRecipeWithValidation}
           recipeListCount={recipeStats.selectedCount}
           disabled={!recipeValidation.hasSelection}
@@ -131,7 +102,7 @@ const RecipeManagement = ({
     [
       allRecipes,
       selectedRecipe,
-      onRecipeChange,
+      handleRecipeChange,
       handleAddRecipeWithValidation,
       recipeStats,
       recipeValidation,
@@ -147,14 +118,19 @@ const RecipeManagement = ({
         <h3 className="recipe-management__section-title">Selected Recipes</h3>
         <ManageableRecipeList
           recipes={recipeList}
-          onRemoveRecipe={onRemoveRecipe}
+          onRemoveRecipe={handleRemoveRecipe}
           onClearList={handleClearListWithConfirmation}
           showStats={true}
           stats={recipeStats}
         />
       </section>
     ),
-    [recipeList, onRemoveRecipe, handleClearListWithConfirmation, recipeStats]
+    [
+      recipeList,
+      handleRemoveRecipe,
+      handleClearListWithConfirmation,
+      recipeStats,
+    ]
   );
 
   return (
@@ -167,10 +143,6 @@ const RecipeManagement = ({
 
 /**
  * Pure component for displaying recipe selection statistics
- * @param {Object} props - Component props
- * @param {Object} props.stats - Recipe statistics
- * @param {Object} props.validation - Recipe validation state
- * @returns {JSX.Element} Statistics display
  */
 const RecipeSelectionStats = ({ stats, validation }) => (
   <div className="recipe-management__stats">
@@ -211,7 +183,7 @@ const RecipeSelectionStats = ({ stats, validation }) => (
 );
 
 /**
- * PropTypes for type checking and documentation
+ * Simplified PropTypes
  */
 RecipeManagement.propTypes = {
   allRecipes: PropTypes.arrayOf(
@@ -220,19 +192,9 @@ RecipeManagement.propTypes = {
       name: PropTypes.string.isRequired,
     })
   ).isRequired,
-  selectedRecipe: PropTypes.string.isRequired,
-  recipeList: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  onRecipeChange: PropTypes.func.isRequired,
-  onAddRecipe: PropTypes.func.isRequired,
-  onRemoveRecipe: PropTypes.func.isRequired,
-  onClearList: PropTypes.func.isRequired,
   stateManagers: PropTypes.object.isRequired,
   recipeServiceFunctions: PropTypes.object.isRequired,
+  onRecipeListChange: PropTypes.func, // Optional callback for parent updates
 };
 
 RecipeSelectionStats.propTypes = {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import "./App.css";
 import RecipeManagement from "./components/recipeManagement/RecipeManagement";
 import ComponentList from "./components/componentList/ComponentList";
@@ -6,14 +6,12 @@ import { LoadingState } from "./components/ui/LoadingState";
 import { ErrorState } from "./components/ui/ErrorState";
 import { useRecipeData } from "./hooks/useRecipeData";
 import { useRecipeFiltering } from "./hooks/useRecipeFiltering";
-import { useRecipeSelection } from "./hooks/useRecipeSelection";
-import { useRecipeList } from "./hooks/useRecipeList";
-import { useComponentCalculation } from "./hooks/useComponentCalculation";
 import { useAppState } from "./hooks/useAppState";
+import { useComponentCalculation } from "./hooks/useComponentCalculation";
 
 /**
  * Main application component for the AoC Calculator
- * Manages recipe selection, recipe list, and component calculation
+ * Now simplified with RecipeManagement handling its own state
  */
 function App() {
   // Initialize recipe data and services
@@ -26,19 +24,19 @@ function App() {
   // Filter available recipes
   const availableRecipes = useRecipeFiltering(recipeServiceFunctions);
 
-  // Manage recipe selection
-  const { selectedRecipe, handleRecipeChange } =
-    useRecipeSelection(availableRecipes);
+  // Track recipe list for component calculation (received from RecipeManagement)
+  const [currentRecipeList, setCurrentRecipeList] = React.useState([]);
 
-  // Manage recipe list
-  const { recipeList, handleAddRecipe, handleRemoveRecipe, handleClearList } =
-    useRecipeList(stateManagers);
-
-  // Calculate consolidated components
+  // Calculate consolidated components based on current recipe list
   const consolidatedComponents = useComponentCalculation(
-    recipeList,
+    currentRecipeList,
     recipeServiceFunctions
   );
+
+  // Handle recipe list changes from RecipeManagement
+  const handleRecipeListChange = useCallback((newRecipeList) => {
+    setCurrentRecipeList(newRecipeList);
+  }, []);
 
   // Loading state
   if (isLoading || !isInitialized) {
@@ -60,12 +58,6 @@ function App() {
     );
   }
 
-  // Enhanced add recipe handler that includes selected recipe
-  const handleAddRecipeWithSelection = () => {
-    handleAddRecipe(selectedRecipe);
-  };
-
-  // Main application render
   return (
     <div className="App">
       <header className="App-header">
@@ -76,14 +68,9 @@ function App() {
       <main className="App-main">
         <RecipeManagement
           allRecipes={availableRecipes}
-          selectedRecipe={selectedRecipe}
-          recipeList={recipeList}
-          onRecipeChange={handleRecipeChange}
-          onAddRecipe={handleAddRecipeWithSelection}
-          onRemoveRecipe={handleRemoveRecipe}
-          onClearList={handleClearList}
           stateManagers={stateManagers}
           recipeServiceFunctions={recipeServiceFunctions}
+          onRecipeListChange={handleRecipeListChange}
         />
 
         <ComponentList
