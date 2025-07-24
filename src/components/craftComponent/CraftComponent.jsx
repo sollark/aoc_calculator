@@ -24,7 +24,6 @@ const CraftComponent = ({
     >
       <div className="craft-component__info">
         <span className="craft-component__name">{name}</span>
-        <span className="craft-component__id">ID: {id}</span>
         <span className="craft-component__quantity">Required: {quantity}</span>
         {!readOnly && (
           <span className="craft-component__current">

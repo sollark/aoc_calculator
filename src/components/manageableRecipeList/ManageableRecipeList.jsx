@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Recipe from "../recipe/Recipe";
+import Recipe from "../recipeCard/RecipeCard";
 import BaseRecipeList from "../baseRecipeList/BaseRecipeList";
 import "./manageableRecipeList.css";
 
