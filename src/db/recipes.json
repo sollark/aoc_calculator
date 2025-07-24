@@ -3,32 +3,92 @@
     {
       "id": 1000,
       "name": "Oak Wood",
-      "description": "Raw logs from oak trees"
+      "description": "Raw logs from oak trees",
+      "gathering": {
+        "skill": "lumberjacking",
+        "skillLevel": "novice"
+      }
     },
     {
       "id": 1001,
       "name": "Copper Ore",
-      "description": "Raw copper from mining"
+      "description": "Raw copper from mining",
+      "gathering": {
+        "skill": "mining",
+        "skillLevel": "novice"
+      }
     },
     {
       "id": 1002,
       "name": "Basalt Ore",
-      "description": "Raw basalt from mining"
+      "description": "Raw basalt from mining",
+      "gathering": {
+        "skill": "mining",
+        "skillLevel": "apprentice"
+      }
     },
     {
       "id": 1003,
       "name": "Essence Crystal",
-      "description": "Magical essence node drop or refined crystal"
+      "description": "Magical essence crystal purchased from vendors",
+      "gathering": {
+        "skill": "vendor",
+        "skillLevel": "none"
+      }
     },
-    { "id": 1004, "name": "Snowdrop", "description": "Herb used in alchemy" },
-    { "id": 1005, "name": "Daffodil", "description": "Herb used in alchemy" },
-    { "id": 1006, "name": "Grave Lily", "description": "Herb used in alchemy" },
-    { "id": 1007, "name": "Water", "description": "Basic alchemy component" },
-    { "id": 1008, "name": "Ruby", "description": "Gemstone for inks" },
+    {
+      "id": 1004,
+      "name": "Snowdrop",
+      "description": "Herb used in alchemy",
+      "gathering": {
+        "skill": "herbalism",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1005,
+      "name": "Daffodil",
+      "description": "Herb used in alchemy",
+      "gathering": {
+        "skill": "herbalism",
+        "skillLevel": "novice"
+      }
+    },
+    {
+      "id": 1006,
+      "name": "Grave Lily",
+      "description": "Herb used in alchemy",
+      "gathering": {
+        "skill": "herbalism",
+        "skillLevel": "apprentice"
+      }
+    },
+    {
+      "id": 1007,
+      "name": "Water",
+      "description": "Basic alchemy component",
+      "gathering": {
+        "skill": "vendor",
+        "skillLevel": "none"
+      }
+    },
+    {
+      "id": 1008,
+      "name": "Ruby",
+      "description": "Gemstone for inks",
+      "gathering": {
+        "skill": "mining",
+        "skillLevel": "journeyman"
+      }
+    },
     {
       "id": 1009,
       "name": "Ethanol",
-      "description": "Alcohol used in advanced inks"
+      "description": "Alcohol used in advanced inks",
+      "gathering": {
+        "skill": "vendor",
+        "skillLevel": "none"
+      }
     }
   ],
 
@@ -37,6 +97,10 @@
       "id": 2000,
       "name": "Oak Timber",
       "description": "Processes Oak Wood into Oak Timber",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "lumber_milling",
         "workStation": "lumber_milling_bench",
@@ -47,6 +111,10 @@
       "id": 2001,
       "name": "Copper Fragments",
       "description": "Smelts Copper Ore into Copper Fragments",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "metalworking",
         "workStation": "metalworking_bench",
@@ -57,6 +125,10 @@
       "id": 2002,
       "name": "Grave Lily Powder",
       "description": "Turns Grave Lily into Grave Lily Powder",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -67,6 +139,10 @@
       "id": 2003,
       "name": "Snowdrop Powder",
       "description": "Turns Snowdrop into Snowdrop Powder",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -77,6 +153,10 @@
       "id": 2004,
       "name": "Daffodil Powder",
       "description": "Turns Daffodil into Daffodil Powder",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -87,6 +167,10 @@
       "id": 2005,
       "name": "Basalt Weapon Mold",
       "description": "Processes Basalt Ore into a Weapon Mold",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "stonemasonry",
         "workStation": "stone_casting_bench",
@@ -97,6 +181,10 @@
       "id": 2100,
       "name": "Magic Powder",
       "description": "A powder infused with magical and herbal ingredients",
+      "requirements": {
+        "playerLevel": 8,
+        "artisanLevel": "apprentice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -111,6 +199,10 @@
       "id": 2101,
       "name": "Red Ink",
       "description": "Crafted ink used for magical or written scrolls",
+      "requirements": {
+        "playerLevel": 4,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -124,6 +216,10 @@
       "id": 2102,
       "name": "White Ink",
       "description": "Crafted ink using processed Snowdrop Powder",
+      "requirements": {
+        "playerLevel": 6,
+        "artisanLevel": "apprentice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -137,6 +233,10 @@
       "id": 2103,
       "name": "Yellow Ink",
       "description": "Crafted ink using Daffodil Powder",
+      "requirements": {
+        "playerLevel": 6,
+        "artisanLevel": "apprentice"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -150,6 +250,10 @@
       "id": 2104,
       "name": "Black Ink",
       "description": "Dark ink made with Grave Lily Powder and Ethanol",
+      "requirements": {
+        "playerLevel": 10,
+        "artisanLevel": "journeyman"
+      },
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -167,6 +271,10 @@
       "id": 2500,
       "name": "Novice Scroll of Intelligence",
       "description": "Basic intelligence-boosting scroll",
+      "requirements": {
+        "playerLevel": 5,
+        "artisanLevel": "novice"
+      },
       "recipe": {
         "artisanSkill": "scribe",
         "workStation": "scribe_bench",
@@ -181,6 +289,10 @@
       "id": 2501,
       "name": "Apprentice Scroll of Intelligence",
       "description": "Stronger intelligence scroll crafted by apprentices",
+      "requirements": {
+        "playerLevel": 12,
+        "artisanLevel": "apprentice"
+      },
       "recipe": {
         "artisanSkill": "scribe",
         "workStation": "scribe_bench",
@@ -195,9 +307,13 @@
       "id": 2502,
       "name": "Novice Mining Pickaxe",
       "description": "Entry-level pickaxe for mining",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
-        "artisanSkill": "mining",
-        "workStation": "mining_bench",
+        "artisanSkill": "weaponsmithing",
+        "workStation": "weaponsmithing_bench",
         "components": [
           { "id": 2000, "name": "Oak Timber", "quantity": 10 },
           { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
@@ -209,9 +325,13 @@
       "id": 2503,
       "name": "Novice Lumberjacking Axe",
       "description": "Basic axe for cutting down trees",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
-        "artisanSkill": "lumberjacking",
-        "workStation": "lumberjacking_bench",
+        "artisanSkill": "weaponsmithing",
+        "workStation": "weaponsmithing_bench",
         "components": [
           { "id": 2000, "name": "Oak Timber", "quantity": 10 },
           { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
@@ -223,9 +343,13 @@
       "id": 2504,
       "name": "Novice Herbalism Sickle",
       "description": "Tool used for basic herb gathering",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "novice"
+      },
       "recipe": {
-        "artisanSkill": "herbalism",
-        "workStation": "herbalism_tools_bench",
+        "artisanSkill": "weaponsmithing",
+        "workStation": "weaponsmithing_bench",
         "components": [
           { "id": 2000, "name": "Oak Timber", "quantity": 5 },
           { "id": 2001, "name": "Copper Fragments", "quantity": 5 },
@@ -237,9 +361,13 @@
       "id": 2505,
       "name": "Apprentice Herbalism Sickle",
       "description": "Stronger sickle for skilled herbalists",
+      "requirements": {
+        "playerLevel": 0,
+        "artisanLevel": "apprentice"
+      },
       "recipe": {
-        "artisanSkill": "herbalism",
-        "workStation": "herbalism_tools_bench",
+        "artisanSkill": "weaponsmithing",
+        "workStation": "weaponsmithing_bench",
         "components": [
           { "id": 2000, "name": "Oak Timber", "quantity": 10 },
           { "id": 2001, "name": "Copper Fragments", "quantity": 10 },
@@ -247,5 +375,32 @@
         ]
       }
     }
+  ],
+
+  "artisan_levels": [
+    { "level": "novice", "order": 1, "description": "Entry level crafting" },
+    {
+      "level": "apprentice",
+      "order": 2,
+      "description": "Intermediate crafting skills"
+    },
+    {
+      "level": "journeyman",
+      "order": 3,
+      "description": "Advanced crafting techniques"
+    },
+    { "level": "expert", "order": 4, "description": "Master level crafting" },
+    {
+      "level": "master",
+      "order": 5,
+      "description": "Legendary crafting abilities"
+    }
+  ],
+
+  "gathering_skills": [
+    { "skill": "mining", "description": "Extract ores and stones from nodes" },
+    { "skill": "lumberjacking", "description": "Harvest wood from trees" },
+    { "skill": "herbalism", "description": "Gather herbs and plants" },
+    { "skill": "vendor", "description": "Items purchased from vendors" }
   ]
 }
