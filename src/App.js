@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./App.css";
 import recipesData from "./db/recipes.json";
 import RecipeSelector from "./components/recipeSelector/RecipeSelector";
 import ManageableRecipeList from "./components/manageableRecipeList/ManageableRecipeList";
 import ComponentList from "./components/componentList/ComponentList";
+import { useRecipeData } from "./hooks/useRecipeData"; // Named import
 import {
-  createRecipeLookups,
-  createRawComponentLookups,
-  findRecipe,
-  findRawComponent,
-  consolidateComponentsById,
-} from "./utils/recipeUtils";
+  initializeDefaultRecipe,
+  logInitializationData,
+  createStateManagers,
+} from "./services/appStateService"; // Named imports
 
 function App() {
   const [selectedRecipe, setSelectedRecipe] = useState("");
@@ -18,7 +17,7 @@ function App() {
   const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
   // Combine all recipe arrays from JSON structure
-  const allRecipes = React.useMemo(
+  const allRecipes = useMemo(
     () => [
       ...recipesData.processing_recipes,
       ...recipesData.crafted_components,
@@ -27,159 +26,57 @@ function App() {
     []
   );
 
-  // Create efficient lookup maps using utility functions
-  const recipeLookups = React.useMemo(
-    () => createRecipeLookups(allRecipes),
-    [allRecipes]
+  // Initialize recipe data and services using custom hook
+  const { recipeLookups, rawComponentLookups, recipeServiceFunctions } =
+    useRecipeData(allRecipes, recipesData.raw_components);
+
+  // Create state management functions
+  const stateManagers = useMemo(
+    () => createStateManagers(setRecipeList, recipeServiceFunctions),
+    [recipeServiceFunctions]
   );
 
-  const rawComponentLookups = React.useMemo(
-    () => createRawComponentLookups(recipesData.raw_components),
-    []
-  );
-
-  // Optimized finder functions using lookups
-  const findRecipeByIdentifier = React.useCallback(
-    (identifier) => findRecipe(recipeLookups, allRecipes, identifier),
-    [recipeLookups, allRecipes]
-  );
-
-  const findRawComponentByIdentifier = React.useCallback(
-    (identifier) =>
-      findRawComponent(
-        rawComponentLookups,
-        recipesData.raw_components,
-        identifier
-      ),
-    [rawComponentLookups]
-  );
-
-  console.log("All Recipes Loaded:", allRecipes);
-  console.log("Recipe Lookups:", recipeLookups);
-  console.log("Raw Component Lookups:", rawComponentLookups);
-
+  // Log initialization data (development only)
   useEffect(() => {
-    if (allRecipes.length > 0 && !selectedRecipe) {
-      setSelectedRecipe(allRecipes[0].name);
+    logInitializationData(allRecipes, recipeLookups, rawComponentLookups);
+  }, [allRecipes, recipeLookups, rawComponentLookups]);
+
+  // Initialize default recipe selection
+  useEffect(() => {
+    const defaultRecipe = initializeDefaultRecipe(allRecipes, selectedRecipe);
+    if (defaultRecipe !== selectedRecipe) {
+      setSelectedRecipe(defaultRecipe);
     }
   }, [allRecipes, selectedRecipe]);
 
-  /**
-   * Pure function to recursively break down components to raw materials
-   * @param {string} componentName - Name of component to break down
-   * @param {number} quantity - Quantity needed
-   * @param {Set} visited - Set of visited components to prevent cycles
-   * @returns {Array} Array of raw components
-   */
-  const breakDownToRawComponents = React.useCallback(
-    (componentName, quantity = 1, visited = new Set()) => {
-      // Prevent infinite recursion
-      if (visited.has(componentName)) {
-        console.warn(`Circular dependency detected for ${componentName}`);
-        return [];
-      }
+  // Process recipe list to extract consolidated components
+  useEffect(() => {
+    const consolidated =
+      recipeServiceFunctions.processRecipeListToRawComponents(recipeList);
+    setConsolidatedComponents(consolidated);
+  }, [recipeList, recipeServiceFunctions]);
 
-      // Check if it's already a raw component
-      const rawComponent = findRawComponentByIdentifier(componentName);
-      if (rawComponent) {
-        return [
-          {
-            id: rawComponent.id,
-            name: componentName,
-            quantity: quantity,
-            isRaw: true,
-            description: rawComponent.description,
-          },
-        ];
-      }
+  // Event handlers using service functions
+  const handleAddRecipe = useCallback(() => {
+    const result = recipeServiceFunctions.addRecipeToList(
+      recipeList,
+      selectedRecipe
+    );
+    stateManagers.handleRecipeAddition(result);
+  }, [selectedRecipe, recipeList, recipeServiceFunctions, stateManagers]);
 
-      // Check if it's a processing recipe
-      const processingRecipe = findRecipeByIdentifier(componentName);
-      if (processingRecipe?.recipe?.components) {
-        const newVisited = new Set(visited);
-        newVisited.add(componentName);
+  const handleClearList = useCallback(() => {
+    stateManagers.clearRecipeList();
+  }, [stateManagers]);
 
-        const rawComponents = processingRecipe.recipe.components.flatMap(
-          (component) =>
-            breakDownToRawComponents(
-              component.name,
-              component.quantity * quantity,
-              newVisited
-            )
-        );
-
-        return rawComponents;
-      }
-
-      // Component not found - treat as unknown
-      console.warn(
-        `Component ${componentName} not found in raw or processing recipes`
-      );
-      return [
-        {
-          id: `unknown_${componentName}`,
-          name: componentName,
-          quantity: quantity,
-          isRaw: false,
-          isUnknown: true,
-        },
-      ];
+  const handleRemoveRecipe = useCallback(
+    (recipeId) => {
+      stateManagers.handleRecipeRemoval(recipeId);
     },
-    [findRawComponentByIdentifier, findRecipeByIdentifier]
+    [stateManagers]
   );
 
-  // Extract and process all components from recipes
-  useEffect(() => {
-    if (recipeList.length === 0) {
-      setConsolidatedComponents([]);
-      return;
-    }
-
-    console.log(
-      "Processing components for recipes:",
-      recipeList.map((r) => r.name)
-    );
-
-    // Process all components using functional approach
-    const allRawComponents = recipeList
-      .filter((recipe) => recipe.recipe?.components)
-      .flatMap((recipe) =>
-        recipe.recipe.components.flatMap((component) =>
-          breakDownToRawComponents(component.name, component.quantity)
-        )
-      );
-
-    const consolidated = consolidateComponentsById(allRawComponents);
-    console.log("Consolidated raw components:", consolidated);
-    setConsolidatedComponents(consolidated);
-  }, [recipeList, breakDownToRawComponents]);
-
-  // Event handlers
-  const handleAddRecipe = React.useCallback(() => {
-    const recipeData = findRecipeByIdentifier(selectedRecipe);
-    if (recipeData) {
-      const isAlreadyAdded = recipeList.some(
-        (recipe) => recipe.id === recipeData.id
-      );
-
-      if (!isAlreadyAdded) {
-        console.log("Adding recipe:", recipeData);
-        setRecipeList((prev) => [...prev, recipeData]);
-      } else {
-        console.log("Recipe already in list:", recipeData.name);
-      }
-    }
-  }, [selectedRecipe, recipeList, findRecipeByIdentifier]);
-
-  const handleClearList = React.useCallback(() => {
-    setRecipeList([]);
-  }, []);
-
-  const handleRemoveRecipe = React.useCallback((recipeId) => {
-    setRecipeList((prev) => prev.filter((recipe) => recipe.id !== recipeId));
-  }, []);
-
-  const handleRecipeChange = React.useCallback((recipeName) => {
+  const handleRecipeChange = useCallback((recipeName) => {
     setSelectedRecipe(recipeName);
   }, []);
 
