@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./App.css";
 import recipesData from "./db/recipes.json";
-import RecipeSelector from "./components/recipeSelector/RecipeSelector";
-import ManageableRecipeList from "./components/manageableRecipeList/ManageableRecipeList";
 import ComponentList from "./components/componentList/ComponentList";
-import { useRecipeData } from "./hooks/useRecipeData"; // Named import
+import RecipeManagement from "./components/recipeManagement/RecipeManagement";
+import { useRecipeData } from "./hooks/useRecipeData";
+import { useRecipeManagement } from "./hooks/useRecipeManagement";
 import {
   initializeDefaultRecipe,
   logInitializationData,
   createStateManagers,
-} from "./services/appStateService"; // Named imports
+} from "./services/appStateService";
 
 function App() {
   const [selectedRecipe, setSelectedRecipe] = useState("");
@@ -36,6 +36,18 @@ function App() {
     [recipeServiceFunctions]
   );
 
+  // Get recipe management handlers
+  const {
+    handleAddRecipe,
+    handleRemoveRecipe,
+    handleClearList,
+    handleRecipeChange,
+  } = useRecipeManagement(
+    stateManagers,
+    recipeServiceFunctions,
+    setSelectedRecipe
+  );
+
   // Log initialization data (development only)
   useEffect(() => {
     logInitializationData(allRecipes, recipeLookups, rawComponentLookups);
@@ -56,29 +68,10 @@ function App() {
     setConsolidatedComponents(consolidated);
   }, [recipeList, recipeServiceFunctions]);
 
-  // Event handlers using service functions
-  const handleAddRecipe = useCallback(() => {
-    const result = recipeServiceFunctions.addRecipeToList(
-      recipeList,
-      selectedRecipe
-    );
-    stateManagers.handleRecipeAddition(result);
-  }, [selectedRecipe, recipeList, recipeServiceFunctions, stateManagers]);
-
-  const handleClearList = useCallback(() => {
-    stateManagers.clearRecipeList();
-  }, [stateManagers]);
-
-  const handleRemoveRecipe = useCallback(
-    (recipeId) => {
-      stateManagers.handleRecipeRemoval(recipeId);
-    },
-    [stateManagers]
-  );
-
-  const handleRecipeChange = useCallback((recipeName) => {
-    setSelectedRecipe(recipeName);
-  }, []);
+  // Memoized add recipe handler for performance
+  const handleAddRecipeToList = useCallback(() => {
+    handleAddRecipe(recipeList, selectedRecipe);
+  }, [handleAddRecipe, recipeList, selectedRecipe]);
 
   return (
     <div className="App">
@@ -87,19 +80,17 @@ function App() {
         <p>A helpful tool for crafting in Ashes of Creation</p>
       </header>
 
-      <main>
-        <RecipeSelector
-          recipes={allRecipes}
+      <main className="App-main">
+        <RecipeManagement
+          allRecipes={allRecipes}
           selectedRecipe={selectedRecipe}
+          recipeList={recipeList}
           onRecipeChange={handleRecipeChange}
-          onAddRecipe={handleAddRecipe}
-          recipeListCount={recipeList.length}
-        />
-
-        <ManageableRecipeList
-          recipes={recipeList}
+          onAddRecipe={handleAddRecipeToList}
           onRemoveRecipe={handleRemoveRecipe}
           onClearList={handleClearList}
+          stateManagers={stateManagers}
+          recipeServiceFunctions={recipeServiceFunctions}
         />
 
         <ComponentList
