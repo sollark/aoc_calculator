@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "./App.css";
 import recipesData from "./db/recipes.json";
-import ComponentList from "./components/componentList/ComponentList";
 import RecipeManagement from "./components/recipeManagement/RecipeManagement";
+import ComponentList from "./components/componentList/ComponentList";
 import { useRecipeData } from "./hooks/useRecipeData";
 import { useRecipeManagement } from "./hooks/useRecipeManagement";
 import {
@@ -16,13 +16,9 @@ function App() {
   const [recipeList, setRecipeList] = useState([]);
   const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
-  // Combine all recipe arrays from JSON structure
+  // ✅ FIXED: Update to match new JSON structure
   const allRecipes = useMemo(
-    () => [
-      ...recipesData.processing_recipes,
-      ...recipesData.crafted_components,
-      ...recipesData.crafted_items,
-    ],
+    () => [...recipesData.intermediate_recipes, ...recipesData.crafted_items],
     []
   );
 

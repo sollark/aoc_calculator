@@ -32,10 +32,10 @@
     }
   ],
 
-  "processing_recipes": [
+  "intermediate_recipes": [
     {
       "id": 2000,
-      "name": "Process Oak Timber",
+      "name": "Oak Timber",
       "description": "Processes Oak Wood into Oak Timber",
       "recipe": {
         "artisanSkill": "lumber_milling",
@@ -45,8 +45,8 @@
     },
     {
       "id": 2001,
-      "name": "Process Copper Fragments",
-      "description": "Smelts Copper Ore into Fragments",
+      "name": "Copper Fragments",
+      "description": "Smelts Copper Ore into Copper Fragments",
       "recipe": {
         "artisanSkill": "metalworking",
         "workStation": "metalworking_bench",
@@ -55,8 +55,8 @@
     },
     {
       "id": 2002,
-      "name": "Process Grave Lily Powder",
-      "description": "Turns Grave Lily into a powder for alchemy",
+      "name": "Grave Lily Powder",
+      "description": "Turns Grave Lily into Grave Lily Powder",
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -65,8 +65,8 @@
     },
     {
       "id": 2003,
-      "name": "Process Snowdrop Powder",
-      "description": "Turns Snowdrop into a powder for alchemy",
+      "name": "Snowdrop Powder",
+      "description": "Turns Snowdrop into Snowdrop Powder",
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -75,8 +75,8 @@
     },
     {
       "id": 2004,
-      "name": "Process Daffodil Powder",
-      "description": "Turns Daffodil into a powder for alchemy",
+      "name": "Daffodil Powder",
+      "description": "Turns Daffodil into Daffodil Powder",
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
@@ -85,17 +85,14 @@
     },
     {
       "id": 2005,
-      "name": "Basalt Mold Casting",
+      "name": "Basalt Weapon Mold",
       "description": "Processes Basalt Ore into a Weapon Mold",
       "recipe": {
         "artisanSkill": "stonemasonry",
         "workStation": "stone_casting_bench",
         "components": [{ "id": 1002, "name": "Basalt Ore", "quantity": 1 }]
       }
-    }
-  ],
-
-  "crafted_components": [
+    },
     {
       "id": 2100,
       "name": "Magic Powder",
@@ -152,7 +149,7 @@
     {
       "id": 2104,
       "name": "Black Ink",
-      "description": "Dark ink made with Grave Lily and Ethanol",
+      "description": "Dark ink made with Grave Lily Powder and Ethanol",
       "recipe": {
         "artisanSkill": "alchemy",
         "workStation": "alchemy_station",
