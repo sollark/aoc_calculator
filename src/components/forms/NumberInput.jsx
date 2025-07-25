@@ -1,26 +1,26 @@
-import React from 'react';
-import './NumberInput.css';
+import React from "react";
+import "./numberInput.css";
 
-const NumberInput = ({ 
-  label, 
-  value, 
-  onChange, 
+const NumberInput = ({
+  label,
+  value,
+  onChange,
   placeholder = "Enter a quantity",
   min = 0,
   max = 1000,
   step = 1,
   id,
   className = "",
-  ...props 
+  ...props
 }) => {
   console.log(`NumberInput rendered`);
 
   const handleChange = (e) => {
     const inputValue = e.target.value;
     console.log(`Input changed to: ${inputValue}`);
-    
+
     // Only allow valid numbers, do not allow empty string
-    if (!isNaN(inputValue) && inputValue !== '') {
+    if (!isNaN(inputValue) && inputValue !== "") {
       onChange(Number(inputValue));
     }
   };

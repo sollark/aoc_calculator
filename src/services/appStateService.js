@@ -63,17 +63,15 @@ export const createRecipeRemovalHandler =
  * @returns {Object} Composed state management functions
  */
 export const createStateManagers = (recipeServiceFunctions) => {
-  // Add null check at the beginning
   if (!recipeServiceFunctions) {
     console.error("recipeServiceFunctions is null or undefined");
     return null;
   }
 
-  // Destructure with default values to prevent errors
   const {
     removeRecipeFromList = () => [],
     processRecipeListToRawComponents = () => [],
-    addRecipeToList = () => ({
+    addRecipe = () => ({
       success: false,
       message: "Function not available",
     }),
@@ -82,16 +80,37 @@ export const createStateManagers = (recipeServiceFunctions) => {
   // Recipe list management
   const createRecipeListManager = () => {
     return {
-      addRecipe: (currentList, recipeName) => {
+      addRecipe: (currentList, recipeData) => {
         try {
-          const result = addRecipeToList(currentList, recipeName);
-          if (result.success) {
+          // Use the recipe's actual type, not "recipes"
+          const recipeType = recipeData.type;
+
+          if (!recipeType) {
             return {
-              success: true,
-              newList: [...currentList, result.data],
-              message: result.message,
+              success: false,
+              newList: currentList,
+              message: "Recipe type not found",
             };
           }
+
+          const result = addRecipe(recipeType, recipeData);
+
+          if (result.success) {
+            // For a recipe list, we want to add to the current list, not the database
+            // This should just add to the current list for calculation purposes
+            const newListItem = {
+              id: Date.now(), // Unique ID for the list item
+              recipe: recipeData,
+              quantity: 1, // Default quantity
+            };
+
+            return {
+              success: true,
+              newList: [...currentList, newListItem],
+              message: "Recipe added to list",
+            };
+          }
+
           return {
             success: false,
             newList: currentList,

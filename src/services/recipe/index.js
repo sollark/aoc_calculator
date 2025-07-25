@@ -42,7 +42,7 @@ export * as calculations from "./recipeCalculationService.js";
 
 // Constants and types
 // Error classes
-export * from "./errors.js";
+export * from "utils/errorHandler.js";
 
 // Default export for convenience (CRUD service)
 export default recipeService;

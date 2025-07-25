@@ -1,6 +1,24 @@
+import { VALID_RECIPE_TYPES } from "./constants.js";
+import {
+  InvalidRecipeTypeError,
+  RecipeNotFoundError,
+} from "../../utils/errorHandler.js";
+
 /**
  * CRUD operations for recipe data manipulation
+ * Pure functions that work with recipe data structures
  */
+
+/**
+ * Validate recipe type
+ * @param {string} type - Recipe type to validate
+ * @throws {InvalidRecipeTypeError} If type is invalid
+ */
+const validateRecipeType = (type) => {
+  if (!VALID_RECIPE_TYPES.includes(type)) {
+    throw new InvalidRecipeTypeError(type, VALID_RECIPE_TYPES);
+  }
+};
 
 /**
  * Add recipe to data structure
@@ -10,6 +28,8 @@
  * @returns {Object} Updated recipes data
  */
 export const addRecipeToData = (recipes, type, recipe) => {
+  validateRecipeType(type);
+
   const updatedRecipes = { ...recipes };
   if (!updatedRecipes[type]) {
     updatedRecipes[type] = [];
@@ -27,12 +47,19 @@ export const addRecipeToData = (recipes, type, recipe) => {
  * @returns {Object} Updated recipes data and recipe
  */
 export const updateRecipeInData = (recipes, type, index, updates) => {
+  validateRecipeType(type);
+
+  if (!recipes[type] || index < 0 || index >= recipes[type].length) {
+    throw new RecipeNotFoundError(`Recipe at index ${index} in type ${type}`);
+  }
+
   const updatedRecipes = { ...recipes };
   updatedRecipes[type] = [...updatedRecipes[type]];
   updatedRecipes[type][index] = {
     ...updatedRecipes[type][index],
     ...updates,
   };
+
   return {
     recipes: updatedRecipes,
     updatedRecipe: updatedRecipes[type][index],
@@ -47,9 +74,16 @@ export const updateRecipeInData = (recipes, type, index, updates) => {
  * @returns {Object} Updated recipes data and deleted recipe
  */
 export const removeRecipeFromData = (recipes, type, index) => {
+  validateRecipeType(type);
+
+  if (!recipes[type] || index < 0 || index >= recipes[type].length) {
+    throw new RecipeNotFoundError(`Recipe at index ${index} in type ${type}`);
+  }
+
   const updatedRecipes = { ...recipes };
   const deletedRecipe = updatedRecipes[type][index];
   updatedRecipes[type] = updatedRecipes[type].filter((_, i) => i !== index);
+
   return {
     recipes: updatedRecipes,
     deletedRecipe,
@@ -64,6 +98,8 @@ export const removeRecipeFromData = (recipes, type, index) => {
  * @returns {Object} Updated recipes data
  */
 export const bulkAddRecipes = (recipes, type, newRecipes) => {
+  validateRecipeType(type);
+
   const updatedRecipes = { ...recipes };
   if (!updatedRecipes[type]) {
     updatedRecipes[type] = [];
@@ -85,26 +121,38 @@ export const bulkUpdateRecipes = (recipes, updates) => {
   for (const { id, updates: recipeUpdates } of updates) {
     // Find recipe location
     let found = false;
-    for (const type of Object.keys(updatedRecipes)) {
-      const index = updatedRecipes[type]?.findIndex(
-        (recipe) => recipe.id === id
-      );
-      if (index !== -1) {
-        const result = updateRecipeInData(
-          updatedRecipes,
-          type,
-          index,
-          recipeUpdates
+    for (const type of VALID_RECIPE_TYPES) {
+      if (updatedRecipes[type]) {
+        const index = updatedRecipes[type].findIndex(
+          (recipe) => recipe.id === id
         );
-        updatedRecipes = result.recipes;
-        results.push({
-          id,
-          success: true,
-          recipe: result.updatedRecipe,
-          type,
-        });
-        found = true;
-        break;
+        if (index !== -1) {
+          try {
+            const result = updateRecipeInData(
+              updatedRecipes,
+              type,
+              index,
+              recipeUpdates
+            );
+            updatedRecipes = result.recipes;
+            results.push({
+              id,
+              success: true,
+              recipe: result.updatedRecipe,
+              type,
+            });
+            found = true;
+            break;
+          } catch (error) {
+            results.push({
+              id,
+              success: false,
+              error: error.message,
+            });
+            found = true;
+            break;
+          }
+        }
       }
     }
 
@@ -131,8 +179,37 @@ export const bulkUpdateRecipes = (recipes, updates) => {
  * @returns {Object} Updated recipes data
  */
 export const replaceRecipeType = (recipes, type, newRecipes) => {
+  validateRecipeType(type);
+
   return {
     ...recipes,
     [type]: [...newRecipes],
   };
+};
+
+/**
+ * Check if a recipe is already added to the recipe list
+ * Pure function to check recipe existence in array
+ * @param {Array} recipeList - Current recipe list
+ * @param {Object} recipeData - Recipe to check
+ * @returns {boolean} True if recipe is already in list
+ */
+export const isRecipeAlreadyAdded = (recipeList, recipeData) => {
+  if (!recipeList || !Array.isArray(recipeList) || !recipeData) {
+    return false;
+  }
+
+  return recipeList.some(
+    (item) => item.recipe && item.recipe.id === recipeData.id
+  );
+};
+
+export default {
+  addRecipeToData,
+  updateRecipeInData,
+  removeRecipeFromData,
+  bulkAddRecipes,
+  bulkUpdateRecipes,
+  replaceRecipeType,
+  isRecipeAlreadyAdded, // Add to exports
 };

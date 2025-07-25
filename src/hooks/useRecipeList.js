@@ -10,12 +10,40 @@ export const useRecipeList = (stateManagers) => {
 
   const handleAddRecipe = useCallback(
     (selectedRecipe) => {
-      if (!stateManagers?.recipeList || !selectedRecipe) return;
+      console.log("🔍 handleAddRecipe called with:", selectedRecipe);
+      console.log("🔍 stateManagers:", stateManagers);
+      console.log("🔍 stateManagers.recipeList:", stateManagers?.recipeList);
+
+      if (!stateManagers?.recipeList) {
+        console.error(
+          "❌ Failed to add recipe: stateManagers.recipeList not available"
+        );
+        return;
+      }
+
+      if (!selectedRecipe) {
+        console.error("❌ Failed to add recipe: No recipe selected");
+        return;
+      }
+
+      console.log(
+        "🔍 Available functions in stateManagers.recipeList:",
+        Object.keys(stateManagers.recipeList)
+      );
+
+      if (!stateManagers.recipeList.addRecipe) {
+        console.error(
+          "❌ Failed to add recipe: addRecipe function not available"
+        );
+        return;
+      }
 
       const result = stateManagers.recipeList.addRecipe(
         recipeList,
         selectedRecipe
       );
+
+      console.log("🔍 addRecipe result:", result);
 
       if (result.success) {
         setRecipeList(result.newList);

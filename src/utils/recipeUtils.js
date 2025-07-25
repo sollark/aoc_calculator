@@ -3,6 +3,7 @@ import {
   findWithFallback,
   createSearchFunction,
 } from "./lookupUtils.js";
+import { sortByName } from "../services/recipe/sorting.js";
 
 /**
  * Configuration for recipe lookup maps
@@ -118,9 +119,9 @@ const consolidateComponentsById = (components) => {
     return acc;
   }, {});
 
-  return Object.values(consolidated).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  // Use dedicated sorting service instead of inline sort
+  const consolidatedArray = Object.values(consolidated);
+  return sortByName(consolidatedArray, "asc");
 };
 
 export {

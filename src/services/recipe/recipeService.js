@@ -1,21 +1,41 @@
-import * as fileOps from "./fileOperations.js";
-import * as validators from "./validators.js";
 import * as transformers from "./transformers.js";
 import * as filters from "./filters.js";
-import * as statistics from "./statistics.js";
-import * as crudOps from "./crudOperations.js";
-import { RECIPE_TYPES, VALID_RECIPE_TYPES } from "./constants.js";
-import { RecipeNotFoundError } from "./errors.js";
+import * as sorting from "./sorting.js";
+import * as fileOps from "./jsonFileOperations.js";
+import * as arrayOps from "./recipeArrayOperations.js";
+import { processRecipeListToRawComponents } from "./recipeCalculationService.js";
+
+/**
+ * Recipe service providing comprehensive recipe management functionality
+ * All operations work with cached data for optimal performance
+ */
 
 /**
  * Get all recipes of a specific type
- * @param {string} type - Recipe type
- * @returns {Array} Array of recipes (sync version for browser compatibility)
+ * @param {string} type - Recipe type (raw_components, intermediate_recipes, etc.)
+ * @returns {Array} Array of recipes of the specified type
  */
 export const getRecipesByType = (type) => {
-  validators.validateRecipeType(type);
-  const recipes = fileOps.readRecipesSync();
-  return recipes[type] || [];
+  try {
+    console.log(`Getting recipes by type: ${type}`);
+    const recipes = fileOps.readRecipesSync();
+
+    if (!recipes || !recipes[type]) {
+      console.warn(`No recipes found for type: ${type}`);
+      return [];
+    }
+
+    const recipesWithType = recipes[type].map((recipe) => ({
+      ...recipe,
+      type: type,
+    }));
+
+    console.log(`Found ${recipesWithType.length} recipes of type ${type}`);
+    return recipesWithType;
+  } catch (error) {
+    console.error(`Error getting recipes by type ${type}:`, error);
+    return [];
+  }
 };
 
 /**
@@ -23,17 +43,16 @@ export const getRecipesByType = (type) => {
  * @returns {Array} Array of all recipes
  */
 export const getAllRecipes = () => {
-  const recipes = fileOps.readRecipesSync();
-  return transformers.flattenRecipes(recipes);
-};
-
-/**
- * Get all recipes synchronously (using cached data)
- * @returns {Array} Array of all recipes
- */
-export const getAllRecipesSync = () => {
-  const recipes = fileOps.readRecipesSync();
-  return transformers.flattenRecipes(recipes);
+  try {
+    console.log("Getting all recipes");
+    const recipes = fileOps.readRecipesSync();
+    const flattened = transformers.flattenRecipes(recipes);
+    console.log(`Found ${flattened.length} total recipes`);
+    return flattened;
+  } catch (error) {
+    console.error("Error getting all recipes:", error);
+    return [];
+  }
 };
 
 /**
@@ -42,20 +61,23 @@ export const getAllRecipesSync = () => {
  * @returns {Array} Filtered recipes
  */
 export const filterRecipes = (filterCriteria = {}) => {
-  const allRecipes = getAllRecipes();
-  const filterFunction = filters.createFilterFunction(filterCriteria);
-  return allRecipes.filter(filterFunction);
-};
+  try {
+    console.log("Filtering recipes with criteria:", filterCriteria);
+    const allRecipes = getAllRecipes();
 
-/**
- * Filter recipes synchronously (using cached data)
- * @param {Object} filterCriteria - Filtering options
- * @returns {Array} Filtered recipes
- */
-export const filterRecipesSync = (filterCriteria = {}) => {
-  const allRecipes = getAllRecipesSync();
-  const filterFunction = filters.createFilterFunction(filterCriteria);
-  return allRecipes.filter(filterFunction);
+    if (Object.keys(filterCriteria).length === 0) {
+      return allRecipes;
+    }
+
+    const filterFunction = filters.createFilterFunction(filterCriteria);
+    const filtered = allRecipes.filter(filterFunction);
+
+    console.log(`Filtered to ${filtered.length} recipes`);
+    return filtered;
+  } catch (error) {
+    console.error("Error filtering recipes:", error);
+    return [];
+  }
 };
 
 /**
@@ -64,18 +86,20 @@ export const filterRecipesSync = (filterCriteria = {}) => {
  * @returns {Object|null} Recipe object or null if not found
  */
 export const getRecipeById = (id) => {
-  const allRecipes = getAllRecipes();
-  return allRecipes.find((recipe) => recipe.id === id) || null;
-};
+  try {
+    const allRecipes = getAllRecipes();
+    const recipe = allRecipes.find((recipe) => recipe.id === id);
 
-/**
- * Get recipe by ID synchronously
- * @param {number} id - Recipe ID
- * @returns {Object|null} Recipe object or null if not found
- */
-export const getRecipeByIdSync = (id) => {
-  const allRecipes = getAllRecipesSync();
-  return allRecipes.find((recipe) => recipe.id === id) || null;
+    if (!recipe) {
+      console.warn(`Recipe with ID ${id} not found`);
+      return null;
+    }
+
+    return recipe;
+  } catch (error) {
+    console.error(`Error getting recipe by ID ${id}:`, error);
+    return null;
+  }
 };
 
 /**
@@ -85,23 +109,28 @@ export const getRecipeByIdSync = (id) => {
  * @returns {Object} Success response with added recipe
  */
 export const addRecipe = (type, recipe) => {
-  validators.validateRecipeType(type);
-  validators.validateRecipe(recipe);
-  validators.validateRecipeStructure(recipe, type);
+  try {
+    console.log(`Adding recipe to ${type}:`, recipe);
+    const currentData = fileOps.readRecipesSync();
+    // Use arrayOps instead of transformers for CRUD operations
+    const updatedData = arrayOps.addRecipeToData(currentData, type, recipe);
 
-  const allRecipes = getAllRecipes();
-  validators.validateUniqueId(recipe.id, allRecipes);
+    fileOps.writeRecipes(updatedData);
 
-  const recipes = fileOps.readRecipesSync();
-  const updatedRecipes = crudOps.addRecipeToData(recipes, type, recipe);
-
-  fileOps.writeRecipes(updatedRecipes);
-
-  return {
-    success: true,
-    recipe: transformers.transformForResponse(recipe),
-    type,
-  };
+    console.log("Recipe added successfully");
+    return {
+      success: true,
+      message: "Recipe added successfully",
+      data: recipe,
+    };
+  } catch (error) {
+    console.error("Error adding recipe:", error);
+    return {
+      success: false,
+      message: error.message,
+      data: null,
+    };
+  }
 };
 
 /**
@@ -111,29 +140,44 @@ export const addRecipe = (type, recipe) => {
  * @returns {Object} Success response with updated recipe
  */
 export const updateRecipe = (id, updates) => {
-  validators.validateUpdates(updates);
+  try {
+    console.log(`Updating recipe ${id} with:`, updates);
+    const currentData = fileOps.readRecipesSync();
 
-  const recipes = fileOps.readRecipesSync();
-  const location = transformers.findRecipeLocation(id, recipes);
+    // Find recipe location first
+    const location = transformers.findRecipeLocation(id, currentData);
+    if (!location) {
+      return {
+        success: false,
+        message: `Recipe with ID ${id} not found`,
+        data: null,
+      };
+    }
 
-  if (!location) {
-    throw new RecipeNotFoundError(id);
+    // Use arrayOps for the actual update
+    const result = arrayOps.updateRecipeInData(
+      currentData,
+      location.type,
+      location.index,
+      updates
+    );
+
+    fileOps.writeRecipes(result.recipes);
+
+    console.log("Recipe updated successfully");
+    return {
+      success: true,
+      message: "Recipe updated successfully",
+      data: result.updatedRecipe,
+    };
+  } catch (error) {
+    console.error("Error updating recipe:", error);
+    return {
+      success: false,
+      message: error.message,
+      data: null,
+    };
   }
-
-  const { recipes: updatedRecipes, updatedRecipe } = crudOps.updateRecipeInData(
-    recipes,
-    location.type,
-    location.index,
-    updates
-  );
-
-  fileOps.writeRecipes(updatedRecipes);
-
-  return {
-    success: true,
-    recipe: transformers.transformForResponse(updatedRecipe),
-    type: location.type,
-  };
 };
 
 /**
@@ -142,23 +186,43 @@ export const updateRecipe = (id, updates) => {
  * @returns {Object} Success response with deleted recipe
  */
 export const deleteRecipe = (id) => {
-  const recipes = fileOps.readRecipesSync();
-  const location = transformers.findRecipeLocation(id, recipes);
+  try {
+    console.log(`Deleting recipe with ID: ${id}`);
+    const currentData = fileOps.readRecipesSync();
 
-  if (!location) {
-    throw new RecipeNotFoundError(id);
+    // Find recipe location first
+    const location = transformers.findRecipeLocation(id, currentData);
+    if (!location) {
+      return {
+        success: false,
+        message: `Recipe with ID ${id} not found`,
+        data: null,
+      };
+    }
+
+    // Use arrayOps for the actual deletion
+    const result = arrayOps.removeRecipeFromData(
+      currentData,
+      location.type,
+      location.index
+    );
+
+    fileOps.writeRecipes(result.recipes);
+
+    console.log("Recipe deleted successfully");
+    return {
+      success: true,
+      message: "Recipe deleted successfully",
+      data: result.deletedRecipe,
+    };
+  } catch (error) {
+    console.error("Error deleting recipe:", error);
+    return {
+      success: false,
+      message: error.message,
+      data: null,
+    };
   }
-
-  const { recipes: updatedRecipes, deletedRecipe } =
-    crudOps.removeRecipeFromData(recipes, location.type, location.index);
-
-  fileOps.writeRecipes(updatedRecipes);
-
-  return {
-    success: true,
-    deletedRecipe: transformers.transformForResponse(deletedRecipe),
-    type: location.type,
-  };
 };
 
 /**
@@ -167,7 +231,23 @@ export const deleteRecipe = (id) => {
  * @returns {Array} Recipes that use this component
  */
 export const getRecipesByComponent = (componentId) => {
-  return filterRecipes({ componentUsage: componentId });
+  try {
+    console.log(`Finding recipes that use component ID: ${componentId}`);
+    const allRecipes = getAllRecipes();
+    const recipesUsingComponent = allRecipes.filter((recipe) =>
+      recipe.recipe?.components?.some(
+        (component) => component.id === componentId
+      )
+    );
+
+    console.log(
+      `Found ${recipesUsingComponent.length} recipes using component ${componentId}`
+    );
+    return recipesUsingComponent;
+  } catch (error) {
+    console.error("Error finding recipes by component:", error);
+    return [];
+  }
 };
 
 /**
@@ -175,8 +255,20 @@ export const getRecipesByComponent = (componentId) => {
  * @returns {Array} Array of unique artisan skills
  */
 export const getArtisanSkills = () => {
-  const allRecipes = getAllRecipes();
-  return transformers.extractUniqueValues(allRecipes, "recipe.artisanSkill");
+  try {
+    const allRecipes = getAllRecipes();
+    const skills = [
+      ...new Set(
+        allRecipes.map((recipe) => recipe.recipe?.artisanSkill).filter(Boolean)
+      ),
+    ];
+
+    console.log(`Found ${skills.length} unique artisan skills`);
+    return skills.sort();
+  } catch (error) {
+    console.error("Error getting artisan skills:", error);
+    return [];
+  }
 };
 
 /**
@@ -184,8 +276,20 @@ export const getArtisanSkills = () => {
  * @returns {Array} Array of unique gathering skills
  */
 export const getGatheringSkills = () => {
-  const allRecipes = getAllRecipes();
-  return transformers.extractUniqueValues(allRecipes, "gathering.skill");
+  try {
+    const allRecipes = getAllRecipes();
+    const skills = [
+      ...new Set(
+        allRecipes.map((recipe) => recipe.gathering?.skill).filter(Boolean)
+      ),
+    ];
+
+    console.log(`Found ${skills.length} unique gathering skills`);
+    return skills.sort();
+  } catch (error) {
+    console.error("Error getting gathering skills:", error);
+    return [];
+  }
 };
 
 /**
@@ -193,9 +297,37 @@ export const getGatheringSkills = () => {
  * @returns {Object} Statistics about recipes
  */
 export const getStatistics = () => {
-  const recipes = fileOps.readRecipesSync();
-  const allRecipes = transformers.flattenRecipes(recipes);
-  return statistics.calculateComprehensiveStatistics(recipes, allRecipes);
+  try {
+    const recipes = fileOps.readRecipesSync();
+    const allRecipes = getAllRecipes();
+
+    const stats = {
+      totalRecipes: allRecipes.length,
+      byType: {},
+      artisanSkills: getArtisanSkills().length,
+      gatheringSkills: getGatheringSkills().length,
+      lastUpdated: recipes.metadata?.lastUpdated || "Unknown",
+    };
+
+    // Count by type
+    Object.keys(recipes).forEach((type) => {
+      if (Array.isArray(recipes[type])) {
+        stats.byType[type] = recipes[type].length;
+      }
+    });
+
+    console.log("Recipe statistics:", stats);
+    return stats;
+  } catch (error) {
+    console.error("Error getting statistics:", error);
+    return {
+      totalRecipes: 0,
+      byType: {},
+      artisanSkills: 0,
+      gatheringSkills: 0,
+      lastUpdated: "Error",
+    };
+  }
 };
 
 /**
@@ -204,12 +336,19 @@ export const getStatistics = () => {
  * @returns {Object} Search results with metadata
  */
 export const searchRecipes = (searchOptions = {}) => {
-  const { filters: filterCriteria, sort, limit, offset = 0 } = searchOptions;
+  const {
+    filters: filterCriteria,
+    sortBy = "name",
+    sortOrder = "asc",
+    limit,
+    offset = 0,
+  } = searchOptions;
 
   let results = filterRecipes(filterCriteria || {});
 
-  if (sort && transformers.sortRecipes) {
-    results = transformers.sortRecipes(results, sort);
+  // Use dedicated sorting service
+  if (sortBy) {
+    results = sorting.sortRecipes(results, sortBy, sortOrder);
   }
 
   const total = results.length;
@@ -235,39 +374,80 @@ export const searchRecipes = (searchOptions = {}) => {
  */
 export const initialize = async () => {
   try {
-    return await fileOps.readRecipes();
+    console.log("Initializing recipe service...");
+
+    if (!fileOps.recipesFileExists()) {
+      console.log("Recipe file not found, initializing with default data");
+      const defaultData = fileOps.initializeRecipes();
+      fileOps.writeRecipes(defaultData);
+    }
+
+    const recipes = fileOps.readRecipesSync();
+    console.log("Recipe service initialized successfully");
+
+    return {
+      success: true,
+      message: "Recipe service initialized",
+      data: recipes,
+    };
   } catch (error) {
-    console.warn(
-      "Could not load recipes, initializing with defaults:",
-      error.message
-    );
-    return fileOps.initializeRecipes();
+    console.error("Error initializing recipe service:", error);
+    throw new Error(`Failed to initialize recipe service: ${error.message}`);
   }
 };
 
 // Helper functions for finding recipes by identifier
 export const findRecipeByIdentifier = (identifier) => {
   try {
-    const allRecipes = getAllRecipesSync();
-    return allRecipes.find(
-      (recipe) => recipe.name === identifier || recipe.id === identifier
+    const allRecipes = getAllRecipes();
+
+    // Try by ID first (if identifier is numeric)
+    const numericId = parseInt(identifier);
+    if (!isNaN(numericId)) {
+      const recipeById = allRecipes.find((recipe) => recipe.id === numericId);
+      if (recipeById) return recipeById;
+    }
+
+    // Try by exact name match
+    const recipeByName = allRecipes.find(
+      (recipe) => recipe.name.toLowerCase() === identifier.toLowerCase()
     );
+    if (recipeByName) return recipeByName;
+
+    console.warn(`Recipe not found for identifier: ${identifier}`);
+    return null;
   } catch (error) {
-    console.warn("Could not find recipe:", identifier);
+    console.error(`Error finding recipe by identifier ${identifier}:`, error);
     return null;
   }
 };
 
 export const findRawComponentByIdentifier = (identifier) => {
   try {
-    const recipes = fileOps.readRecipesSync();
-    const rawComponents = recipes.raw_components || [];
-    return rawComponents.find(
-      (component) =>
-        component.name === identifier || component.id === identifier
+    const rawComponents = getRecipesByType("raw_components");
+
+    // Try by ID first (if identifier is numeric)
+    const numericId = parseInt(identifier);
+    if (!isNaN(numericId)) {
+      const componentById = rawComponents.find(
+        (component) => component.id === numericId
+      );
+      if (componentById) return componentById;
+    }
+
+    // Try by exact name match
+    const componentByName = rawComponents.find(
+      (component) => component.name.toLowerCase() === identifier.toLowerCase()
     );
+    if (componentByName) return componentByName;
+
+    console.warn(`Raw component not found for identifier: ${identifier}`);
+    return null;
   } catch (error) {
-    console.warn("Could not find raw component:", identifier);
+    console.error(
+      `Error finding raw component by identifier ${identifier}:`,
+      error
+    );
     return null;
   }
 };
@@ -280,24 +460,25 @@ export const createRecipeServiceFunctions = () => {
   return {
     // CRUD operations
     getAllRecipes,
-    getAllRecipesSync,
     getRecipesByType,
     getRecipeById,
-    getRecipeByIdSync,
     addRecipe,
     updateRecipe,
     deleteRecipe,
 
     // Filtering and searching
     filterRecipes,
-    filterRecipesSync,
     searchRecipes,
     getRecipesByComponent,
 
-    // Metadata operations
+    // Utility functions
     getArtisanSkills,
     getGatheringSkills,
     getStatistics,
+    isRecipeAlreadyAdded: arrayOps.isRecipeAlreadyAdded,
+
+    // Recipe processing functions
+    processRecipeListToRawComponents, // Add this missing function
 
     // Helper functions
     findRecipeByIdentifier,
@@ -305,15 +486,9 @@ export const createRecipeServiceFunctions = () => {
 
     // Initialization
     initialize,
-
-    // Constants
-    RECIPE_TYPES,
-    VALID_RECIPE_TYPES,
   };
 };
 
-// Export constants
-export { RECIPE_TYPES, VALID_RECIPE_TYPES };
-
-// Re-export error classes
-export * from "./errors.js";
+export default {
+  ...createRecipeServiceFunctions(),
+};

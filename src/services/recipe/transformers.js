@@ -1,6 +1,11 @@
 import { VALID_RECIPE_TYPES } from "./constants.js";
 
 /**
+ * Data transformation utilities for recipes
+ * Handles data structure manipulation and formatting
+ */
+
+/**
  * Add type information to recipe
  * @param {string} type - Recipe type
  * @returns {Function} Function that adds type to recipe
@@ -65,34 +70,6 @@ export const groupRecipesBy = (recipes, groupBy) => {
 };
 
 /**
- * Sort recipes by multiple criteria
- * @param {Array} recipes - Recipes to sort
- * @param {Array} sortCriteria - Array of sort criteria objects
- * @returns {Array} Sorted recipes
- */
-export const sortRecipes = (recipes, sortCriteria = []) => {
-  if (sortCriteria.length === 0) {
-    return [...recipes];
-  }
-
-  return [...recipes].sort((a, b) => {
-    for (const { field, direction = "asc" } of sortCriteria) {
-      const aValue = getNestedProperty(a, field);
-      const bValue = getNestedProperty(b, field);
-
-      let comparison = 0;
-      if (aValue < bValue) comparison = -1;
-      else if (aValue > bValue) comparison = 1;
-
-      if (comparison !== 0) {
-        return direction === "desc" ? -comparison : comparison;
-      }
-    }
-    return 0;
-  });
-};
-
-/**
  * Extract unique values from recipes for a given property
  * @param {Array} recipes - Array of recipes
  * @param {string} propertyPath - Dot-notation path to property
@@ -122,22 +99,15 @@ export const getNestedProperty = (obj, path) => {
  * @param {Object} obj - Object to modify
  * @param {string} path - Dot-notation path
  * @param {any} value - Value to set
- * @returns {Object} New object with updated property
+ * @returns {Object} Modified object
  */
 export const setNestedProperty = (obj, path, value) => {
   const keys = path.split(".");
   const lastKey = keys.pop();
-
-  const target = keys.reduce(
-    (current, key) => {
-      if (!current[key] || typeof current[key] !== "object") {
-        current[key] = {};
-      }
-      return current[key];
-    },
-    { ...obj }
-  );
-
+  const target = keys.reduce((current, key) => {
+    if (!current[key]) current[key] = {};
+    return current[key];
+  }, obj);
   target[lastKey] = value;
   return obj;
 };
@@ -147,11 +117,52 @@ export const setNestedProperty = (obj, path, value) => {
  * @param {Object} recipe - Recipe to transform
  * @returns {Object} Transformed recipe
  */
-export const transformForResponse = (recipe) => ({
-  ...recipe,
-  // Add computed fields
-  hasComponents: Boolean(recipe.recipe?.components?.length),
-  componentCount: recipe.recipe?.components?.length || 0,
-  isGatherable: Boolean(recipe.gathering),
-  isCraftable: Boolean(recipe.recipe),
-});
+export const transformForResponse = (recipe) => {
+  return {
+    ...recipe,
+    // Add any response-specific transformations here
+  };
+};
+
+/**
+ * Transform recipes data for export
+ * @param {Object} recipes - Recipes data
+ * @returns {Object} Transformed data suitable for export
+ */
+export const transformForExport = (recipes) => {
+  return {
+    ...recipes,
+    metadata: {
+      ...recipes.metadata,
+      exportedAt: new Date().toISOString(),
+      version: "1.0.0",
+    },
+  };
+};
+
+/**
+ * Normalize recipe data structure
+ * @param {Object} rawRecipes - Raw recipe data that might have inconsistent structure
+ * @returns {Object} Normalized recipe data
+ */
+export const normalizeRecipeData = (rawRecipes) => {
+  const normalized = { ...rawRecipes };
+
+  // Ensure all required arrays exist
+  VALID_RECIPE_TYPES.forEach((type) => {
+    if (!normalized[type]) {
+      normalized[type] = [];
+    }
+  });
+
+  // Ensure metadata exists
+  if (!normalized.metadata) {
+    normalized.metadata = {
+      version: "1.0.0",
+      lastUpdated: new Date().toISOString(),
+      totalRecipes: 0,
+    };
+  }
+
+  return normalized;
+};

@@ -1,5 +1,5 @@
 import recipesData from "../../db/recipes.json";
-import { RecipeError } from "./errors.js";
+import { RecipeError } from "../../utils/errorHandler.js";
 
 // Use imported data directly
 let recipesCache = recipesData;

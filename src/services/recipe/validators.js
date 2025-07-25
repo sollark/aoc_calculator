@@ -3,7 +3,7 @@ import {
   InvalidRecipeTypeError,
   ValidationError,
   DuplicateRecipeError,
-} from "./errors.js";
+} from "utils/errorHandler.js";
 
 /**
  * Validate recipe type

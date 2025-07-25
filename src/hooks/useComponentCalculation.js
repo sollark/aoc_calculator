@@ -10,14 +10,37 @@ export const useComponentCalculation = (recipeList, recipeServiceFunctions) => {
   const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
   useEffect(() => {
-    if (!recipeServiceFunctions || recipeList.length === 0) {
+    console.log("🔍 useComponentCalculation called with:");
+    console.log("🔍 recipeList:", recipeList);
+    console.log("🔍 recipeList length:", recipeList?.length);
+
+    recipeList?.forEach((item, index) => {
+      console.log(`🔍 Recipe list item ${index}:`, item);
+      console.log(`🔍 Recipe list item ${index} recipe:`, item?.recipe);
+    });
+
+    if (!recipeServiceFunctions || !recipeList || recipeList.length === 0) {
+      console.log("🔍 Setting empty components - no recipes or no function");
+      setConsolidatedComponents([]);
+      return;
+    }
+
+    if (!recipeServiceFunctions.processRecipeListToRawComponents) {
+      console.error(
+        "🔍 processRecipeListToRawComponents function not available"
+      );
       setConsolidatedComponents([]);
       return;
     }
 
     try {
+      console.log(
+        "🔍 About to call processRecipeListToRawComponents with:",
+        recipeList
+      );
       const consolidated =
         recipeServiceFunctions.processRecipeListToRawComponents(recipeList);
+      console.log("🔍 processRecipeListToRawComponents result:", consolidated);
       setConsolidatedComponents(consolidated);
     } catch (err) {
       console.error("Error processing recipe list:", err);

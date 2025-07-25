@@ -1,7 +1,8 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import RecipeSelector from "../recipeSelector/RecipeSelector";
 import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList";
+import { useRecipeContext } from "../../contexts/RecipeContext";
 import { useRecipeSelection } from "../../hooks/useRecipeSelection";
 import { useRecipeList } from "../../hooks/useRecipeList";
 import { useRecipeStats } from "../../hooks/useRecipeStats";
@@ -10,21 +11,20 @@ import "./recipeManagement.css";
 
 /**
  * Self-contained recipe management component
- * Manages its own state for recipe selection and list operations
- *
- * @param {Object} props - Component props
- * @param {Array} props.allRecipes - All available recipes
- * @param {Object} props.stateManagers - State management functions
- * @param {Object} props.recipeServiceFunctions - Recipe service functions
- * @param {Function} props.onRecipeListChange - Callback when recipe list changes
- * @returns {JSX.Element} Recipe management interface
+ * Gets all recipes from context using recipeService
  */
-const RecipeManagement = ({
-  allRecipes,
-  stateManagers,
-  recipeServiceFunctions,
-  onRecipeListChange,
-}) => {
+const RecipeManagement = ({ onRecipeListChange }) => {
+  // Get services from context
+  const { recipeService, stateManagers } = useRecipeContext();
+
+  // Get all recipes from the service
+  const allRecipes = useMemo(() => {
+    if (!recipeService || !recipeService.getAllRecipes) {
+      return [];
+    }
+    return recipeService.getAllRecipes();
+  }, [recipeService]);
+
   // Internal state management using custom hooks
   const { selectedRecipe, handleRecipeChange } = useRecipeSelection(allRecipes);
   const {
@@ -40,7 +40,7 @@ const RecipeManagement = ({
     selectedRecipe,
     recipeList,
     allRecipes,
-    recipeServiceFunctions
+    recipeService
   );
 
   // Notify parent component when recipe list changes
@@ -54,13 +54,43 @@ const RecipeManagement = ({
    * Enhanced add recipe handler with validation
    */
   const handleAddRecipeWithValidation = useCallback(() => {
+    console.log("🔧 Add recipe button clicked!");
+    console.log("📋 Selected recipe:", selectedRecipe);
+    console.log("✅ Can add selected:", recipeValidation.canAddSelected);
+    console.log("📚 All recipes count:", allRecipes.length);
+    console.log("🏗️ Current recipe list:", recipeList);
+
     if (!recipeValidation.canAddSelected) {
-      console.warn("Cannot add recipe: validation failed");
+      console.warn("❌ Cannot add recipe: validation failed");
+      console.log("🔍 Validation details:", recipeValidation);
       return;
     }
 
-    addRecipe(selectedRecipe);
-  }, [addRecipe, selectedRecipe, recipeValidation.canAddSelected]);
+    // Find the actual recipe object by name
+    const recipeToAdd = allRecipes.find(
+      (recipe) => recipe.name === selectedRecipe
+    );
+
+    console.log("🎯 Recipe to add:", recipeToAdd);
+
+    if (!recipeToAdd) {
+      console.error("❌ Recipe not found:", selectedRecipe);
+      return;
+    }
+
+    console.log("➕ Calling addRecipe with:", recipeToAdd);
+
+    // Pass the recipe object, not just the name
+    const result = addRecipe(recipeToAdd);
+    console.log("📤 AddRecipe result:", result);
+  }, [
+    addRecipe,
+    selectedRecipe,
+    recipeValidation.canAddSelected,
+    allRecipes,
+    recipeList,
+    recipeValidation,
+  ]);
 
   /**
    * Enhanced clear list handler with confirmation
@@ -133,6 +163,15 @@ const RecipeManagement = ({
     ]
   );
 
+  // Add this debug after the recipeList state is updated
+  useEffect(() => {
+    console.log("🎯 Recipe list updated:", recipeList);
+    recipeList.forEach((item, index) => {
+      console.log(`🎯 Recipe ${index}:`, item);
+      console.log(`🎯 Recipe ${index} data:`, item.recipe);
+    });
+  }, [recipeList]);
+
   return (
     <div className="recipe-management">
       {renderRecipeSelector()}
@@ -186,14 +225,6 @@ const RecipeSelectionStats = ({ stats, validation }) => (
  * Simplified PropTypes
  */
 RecipeManagement.propTypes = {
-  allRecipes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  stateManagers: PropTypes.object.isRequired,
-  recipeServiceFunctions: PropTypes.object.isRequired,
   onRecipeListChange: PropTypes.func, // Optional callback for parent updates
 };
 

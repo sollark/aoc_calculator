@@ -1,4 +1,8 @@
 import { consolidateComponentsById } from "../../utils/recipeUtils.js";
+import {
+  findRecipeByIdentifier,
+  findRawComponentByIdentifier,
+} from "./recipeService.js";
 
 /**
  * Recipe calculation and breakdown service
@@ -7,96 +11,127 @@ import { consolidateComponentsById } from "../../utils/recipeUtils.js";
 
 /**
  * Pure function to recursively break down components to raw materials
- * @param {Function} findRecipeByIdentifier - Function to find recipe
- * @param {Function} findRawComponentByIdentifier - Function to find raw component
  * @param {string} componentName - Name of component to break down
  * @param {number} quantity - Quantity needed
  * @param {Set} visited - Set of visited components to prevent cycles
  * @returns {Array} Array of raw components
  */
-export const breakDownToRawComponents =
-  (findRecipeByIdentifier, findRawComponentByIdentifier) =>
-  (componentName, quantity = 1, visited = new Set()) => {
-    // Prevent infinite recursion
-    if (visited.has(componentName)) {
-      console.warn(`Circular dependency detected for ${componentName}`);
-      return [];
-    }
-
-    // Check if it's already a raw component
-    const rawComponent = findRawComponentByIdentifier(componentName);
-    if (rawComponent) {
-      return [
-        {
-          id: rawComponent.id,
-          name: componentName,
-          quantity: quantity,
-          isRaw: true,
-          description: rawComponent.description,
-          gatheringSkill: rawComponent.gathering?.skill,
-          gatheringLevel: rawComponent.gathering?.skillLevel,
-        },
-      ];
-    }
-
-    // Check if it's a processing recipe
-    const processingRecipe = findRecipeByIdentifier(componentName);
-    if (processingRecipe?.recipe?.components) {
-      const newVisited = new Set(visited);
-      newVisited.add(componentName);
-
-      const breakDownFn = breakDownToRawComponents(
-        findRecipeByIdentifier,
-        findRawComponentByIdentifier
-      );
-
-      const rawComponents = processingRecipe.recipe.components.flatMap(
-        (component) =>
-          breakDownFn(component.name, component.quantity * quantity, newVisited)
-      );
-
-      return rawComponents;
-    }
-
-    // Component not found - treat as unknown
-    console.warn(
-      `Component ${componentName} not found in raw or processing recipes`
-    );
-    return [
-      {
-        id: `unknown_${componentName}`,
-        name: componentName,
-        quantity: quantity,
-        isRaw: false,
-        isUnknown: true,
-        error: "Component not found in recipe database",
-      },
-    ];
-  };
-
-/**
- * Higher-order function that creates a recipe list processor
- * @param {Function} breakDownFn - Function to break down components
- * @returns {Function} Function that processes recipe lists
- */
-export const createRecipeListProcessor = (breakDownFn) => (recipeList) => {
-  if (!recipeList || recipeList.length === 0) {
+export const breakDownToRawComponents = (
+  componentName,
+  quantity = 1,
+  visited = new Set()
+) => {
+  // Prevent infinite recursion
+  if (visited.has(componentName)) {
+    console.warn(`Circular dependency detected for ${componentName}`);
     return [];
   }
 
-  console.log(
-    "Processing components for recipes:",
-    recipeList.map((r) => r.name)
-  );
+  // Check if it's already a raw component
+  const rawComponent = findRawComponentByIdentifier(componentName);
+  if (rawComponent) {
+    return [
+      {
+        id: rawComponent.id,
+        name: componentName,
+        quantity: quantity,
+        isRaw: true,
+        description: rawComponent.description,
+        gatheringSkill: rawComponent.gathering?.skill,
+        gatheringLevel: rawComponent.gathering?.skillLevel,
+      },
+    ];
+  }
 
-  // Process all components using functional approach
-  const allRawComponents = recipeList
-    .filter((recipe) => recipe.recipe?.components)
-    .flatMap((recipe) =>
-      recipe.recipe.components.flatMap((component) =>
-        breakDownFn(component.name, component.quantity)
-      )
+  // Check if it's a processing recipe
+  const processingRecipe = findRecipeByIdentifier(componentName);
+  if (processingRecipe?.recipe?.components) {
+    const newVisited = new Set(visited);
+    newVisited.add(componentName);
+
+    const rawComponents = processingRecipe.recipe.components.flatMap(
+      (component) =>
+        breakDownToRawComponents(
+          component.name,
+          component.quantity * quantity,
+          newVisited
+        )
     );
+
+    return rawComponents;
+  }
+
+  // Component not found - treat as unknown
+  console.warn(
+    `Component ${componentName} not found in raw or processing recipes`
+  );
+  return [
+    {
+      id: `unknown_${componentName}`,
+      name: componentName,
+      quantity: quantity,
+      isRaw: false,
+      isUnknown: true,
+      error: "Component not found in recipe database",
+    },
+  ];
+};
+
+/**
+ * Process recipe list to get consolidated raw components
+ * @param {Array} recipeList - List of recipes to process
+ * @returns {Array} Consolidated raw components
+ */
+export const processRecipeListToRawComponents = (recipeList) => {
+  console.log("🔍 processRecipeListToRawComponents called with:", recipeList);
+
+  if (!recipeList || !Array.isArray(recipeList)) {
+    console.log("🔍 Invalid recipe list");
+    return [];
+  }
+
+  // Extract recipes from the recipe list structure
+  const recipes = recipeList
+    .map((item) => {
+      console.log("🔍 Processing recipe list item:", item);
+      console.log("🔍 Item.recipe:", item?.recipe);
+
+      // The item structure is: {id, recipe, quantity}
+      // The recipe might have nested structure: recipe.recipe.components
+      const recipeData = item?.recipe;
+      if (recipeData && recipeData.recipe) {
+        // If recipe has nested recipe data, use that
+        return recipeData.recipe;
+      }
+      return recipeData;
+    })
+    .filter(Boolean);
+
+  console.log("🔍 Extracted recipes:", recipes);
+
+  // Add more debugging to see what properties each recipe has
+  recipes.forEach((recipe, index) => {
+    console.log(`🔍 Recipe ${index} properties:`, Object.keys(recipe || {}));
+    console.log(
+      `🔍 Recipe ${index} components:`,
+      recipe?.components || recipe?.ingredients
+    );
+  });
+
+  // Check if recipes have the expected structure
+  const validRecipes = recipes.filter((recipe) => recipe?.components);
+
+  if (validRecipes.length === 0) {
+    console.warn("No valid recipes with components found");
+    return [];
+  }
+
+  // Process all components
+  const allRawComponents = validRecipes.flatMap((recipe) =>
+    recipe.components.flatMap((component) =>
+      breakDownToRawComponents(component.name, component.quantity)
+    )
+  );
 
   const consolidated = consolidateComponentsById(allRawComponents);
   console.log("Consolidated raw components:", consolidated);
@@ -104,52 +139,29 @@ export const createRecipeListProcessor = (breakDownFn) => (recipeList) => {
 };
 
 /**
- * Pure function to check if recipe is already in the list
+ * Validate and add recipe to list
  * @param {Array} recipeList - Current recipe list
- * @param {Object} recipeData - Recipe to check
- * @returns {boolean} True if recipe is already in list
+ * @param {string} recipeName - Name of recipe to add
+ * @returns {Object} Validation result with success status and data
  */
-export const isRecipeAlreadyAdded = (recipeList, recipeData) => {
-  return recipeList.some((recipe) => recipe.id === recipeData.id);
-};
+export const addRecipeToList = (recipeList, recipeName) => {
+  console.log("Validating recipe:", recipeName);
 
-/**
- * Higher-order function that creates a recipe validator
- * @param {Function} findRecipeByIdentifier - Function to find recipe
- * @returns {Function} Function that validates and adds recipes
- */
-export const createRecipeValidator =
-  (findRecipeByIdentifier) => (recipeList, recipeName) => {
-    console.log("Validating recipe:", recipeName);
-    console.log(
-      "findRecipeByIdentifier function:",
-      typeof findRecipeByIdentifier
-    );
+  const recipeData = findRecipeByIdentifier(recipeName);
+  console.log("Found recipe data:", recipeData);
 
-    const recipeData = findRecipeByIdentifier(recipeName);
-    console.log("Found recipe data:", recipeData);
+  if (!recipeData) {
+    console.warn(`Recipe not found: ${recipeName}`);
+    return { success: false, message: "Recipe not found", data: null };
+  }
 
-    if (!recipeData) {
-      console.warn(`Recipe not found: ${recipeName}`);
-      return { success: false, message: "Recipe not found", data: null };
-    }
-
-    if (isRecipeAlreadyAdded(recipeList, recipeData)) {
-      console.log("Recipe already in list:", recipeData.name);
-      return {
-        success: false,
-        message: "Recipe already in list",
-        data: recipeData,
-      };
-    }
-
-    console.log("Adding recipe:", recipeData);
-    return {
-      success: true,
-      message: "Recipe added successfully",
-      data: recipeData,
-    };
+  console.log("Adding recipe:", recipeData);
+  return {
+    success: true,
+    message: "Recipe added successfully",
+    data: recipeData,
   };
+};
 
 /**
  * Pure function to remove recipe from list by ID
@@ -224,13 +236,9 @@ export const optimizeGatheringOrder = (rawComponents, skillEfficiency = {}) => {
 /**
  * Pure function to find recipe dependencies
  * @param {Array} recipeList - List of recipes
- * @param {Function} findRecipeByIdentifier - Function to find recipe
  * @returns {Object} Dependency graph
  */
-export const calculateRecipeDependencies = (
-  recipeList,
-  findRecipeByIdentifier
-) => {
+export const calculateRecipeDependencies = (recipeList) => {
   const dependencies = {};
 
   recipeList.forEach((recipe) => {
@@ -254,40 +262,30 @@ export const calculateRecipeDependencies = (
 };
 
 /**
- * Factory function to create recipe calculation service functions
- * @param {Function} findRecipeByIdentifier - Function to find recipe
- * @param {Function} findRawComponentByIdentifier - Function to find raw component
- * @returns {Object} Object containing all recipe calculation service functions
+ * Check if a recipe is already added to the recipe list
+ * @param {Array} recipeList - Current recipe list
+ * @param {Object} recipeData - Recipe to check
+ * @returns {boolean} True if recipe is already in list
  */
-export const createRecipeCalculationService = (
-  findRecipeByIdentifier,
-  findRawComponentByIdentifier
-) => {
-  const breakDownFn = breakDownToRawComponents(
-    findRecipeByIdentifier,
-    findRawComponentByIdentifier
+export const isRecipeAlreadyAdded = (recipeList, recipeData) => {
+  if (!recipeList || !Array.isArray(recipeList) || !recipeData) {
+    return false;
+  }
+
+  return recipeList.some(
+    (item) => item.recipe && item.recipe.id === recipeData.id
   );
-
-  const processRecipeList = createRecipeListProcessor(breakDownFn);
-  const validateAndAddRecipe = createRecipeValidator(findRecipeByIdentifier);
-
-  return {
-    // Core breakdown functions
-    breakDownToRawComponents: breakDownFn,
-    processRecipeListToRawComponents: processRecipeList,
-
-    // Recipe list management
-    addRecipeToList: validateAndAddRecipe,
-    removeRecipeFromList,
-    isRecipeAlreadyAdded,
-
-    // Analysis and optimization
-    calculateCostBreakdown,
-    optimizeGatheringOrder,
-    calculateRecipeDependencies: (recipeList) =>
-      calculateRecipeDependencies(recipeList, findRecipeByIdentifier),
-  };
 };
 
-// Default export for the main factory function
-export default createRecipeCalculationService;
+export const recipeCalculationService = {
+  breakDownToRawComponents,
+  processRecipeListToRawComponents,
+  addRecipeToList,
+  removeRecipeFromList,
+  calculateCostBreakdown,
+  optimizeGatheringOrder,
+  calculateRecipeDependencies,
+  isRecipeAlreadyAdded,
+};
+
+export default recipeCalculationService;
