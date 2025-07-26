@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import RecipeSelector from "../recipeSelector/RecipeSelector";
 import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList";
-import { useRecipeContext } from "../../contexts/RecipeContext";
+import { useRecipeContext } from "../../contexts/RecipeContext.js";
 import { useRecipeSelection } from "../../hooks/useRecipeSelection";
 import { useRecipeList } from "../../hooks/useRecipeList";
 import { useRecipeStats } from "../../hooks/useRecipeStats";
@@ -14,16 +14,12 @@ import "./recipeManagement.css";
  * Gets all recipes from context using recipeService
  */
 const RecipeManagement = ({ onRecipeListChange }) => {
-  // Get services from context
-  const { recipeService, stateManagers } = useRecipeContext();
+  // Get recipes from context (not from service directly)
+  const { availableRecipes, isLoading, error, recipeService, stateManagers } =
+    useRecipeContext();
 
-  // Get all recipes from the service
-  const allRecipes = useMemo(() => {
-    if (!recipeService || !recipeService.getAllRecipes) {
-      return [];
-    }
-    return recipeService.getAllRecipes();
-  }, [recipeService]);
+  // Use availableRecipes from context instead of calling service directly
+  const allRecipes = availableRecipes || [];
 
   // Internal state management using custom hooks
   const { selectedRecipe, handleRecipeChange } = useRecipeSelection(allRecipes);
@@ -83,14 +79,7 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     // Pass the recipe object, not just the name
     const result = addRecipe(recipeToAdd);
     console.log("📤 AddRecipe result:", result);
-  }, [
-    addRecipe,
-    selectedRecipe,
-    recipeValidation.canAddSelected,
-    allRecipes,
-    recipeList,
-    recipeValidation,
-  ]);
+  }, [addRecipe, selectedRecipe, allRecipes, recipeList, recipeValidation]);
 
   /**
    * Enhanced clear list handler with confirmation
@@ -171,6 +160,16 @@ const RecipeManagement = ({ onRecipeListChange }) => {
       console.log(`🎯 Recipe ${index} data:`, item.recipe);
     });
   }, [recipeList]);
+
+  // Debug logging for RecipeManagement (allRecipes)
+  useEffect(() => {
+    console.log(
+      "📋 RecipeManagement - availableRecipes from context:",
+      availableRecipes?.length || 0
+    );
+    console.log("📋 RecipeManagement - isLoading:", isLoading);
+    console.log("📋 RecipeManagement - error:", error);
+  }, [availableRecipes, isLoading, error]);
 
   return (
     <div className="recipe-management">

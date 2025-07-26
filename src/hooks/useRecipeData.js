@@ -1,47 +1,58 @@
-import { useState, useEffect, useMemo } from "react";
-import * as recipeService from "../services/recipe/recipeService.js";
+import { useState, useEffect } from "react";
+import { createRecipeServiceFunctions } from "../services/recipe/recipeService.js";
 
+/**
+ * Hook to load and manage recipe data
+ * Initializes recipe service and provides functions for recipe operations
+ */
 export const useRecipeData = () => {
+  const [recipeServiceFunctions, setRecipeServiceFunctions] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const initializeService = async () => {
+    const initializeRecipes = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        await recipeService.initialize();
-        setIsInitialized(true);
-        setIsLoading(false);
+
+        console.log("🔧 Creating recipe service functions...");
+
+        // Create service functions immediately
+        const serviceFunctions = createRecipeServiceFunctions();
+        setRecipeServiceFunctions(serviceFunctions);
+
+        console.log("🔧 Initializing recipe service...");
+
+        // Initialize the service (loads data)
+        const result = await serviceFunctions.initialize();
+
+        if (result.success) {
+          console.log("✅ Recipe service initialized successfully");
+          setIsInitialized(true);
+        } else {
+          throw new Error(
+            result.message || "Failed to initialize recipe service"
+          );
+        }
       } catch (err) {
-        console.error("Recipe service initialization error:", err);
+        console.error("❌ Error initializing recipe data:", err);
         setError(err.message);
-        setIsLoading(false);
         setIsInitialized(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    initializeService();
+    initializeRecipes();
   }, []);
 
-  // Memoize service functions to prevent infinite re-renders
-  const recipeServiceFunctions = useMemo(() => {
-    if (!isInitialized) return null;
-    try {
-      return recipeService.createRecipeServiceFunctions();
-    } catch (err) {
-      console.error("Error creating service functions:", err);
-      setError(err.message);
-      return null;
-    }
-  }, [isInitialized]);
-
   return {
+    recipeServiceFunctions,
     isLoading,
     error,
     isInitialized,
-    recipeServiceFunctions, // This should match what App.js expects
   };
 };
 

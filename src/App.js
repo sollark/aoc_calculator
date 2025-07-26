@@ -6,7 +6,6 @@ import { LoadingState } from "./components/ui/LoadingState";
 import { ErrorState } from "./components/ui/ErrorState";
 import { RecipeProvider } from "./contexts/RecipeContext";
 import { useRecipeData } from "./hooks/useRecipeData";
-import { useRecipeFiltering } from "./hooks/useRecipeFiltering";
 import { useAppState } from "./hooks/useAppState";
 import { useComponentCalculation } from "./hooks/useComponentCalculation";
 
@@ -24,29 +23,16 @@ import { useComponentCalculation } from "./hooks/useComponentCalculation";
  */
 function App() {
   // Load recipe data from external sources (JSON files)
-  // This hook handles initial data fetching and provides service functions
-  // for recipe operations throughout the application
   const { recipeServiceFunctions, isLoading, error, isInitialized } =
     useRecipeData();
 
   // Initialize global application state managers
-  // These managers handle persistent state like user preferences,
-  // selected recipes, and calculation settings
   const stateManagers = useAppState(recipeServiceFunctions, isInitialized);
 
-  // Filter and prepare recipes for display in the UI
-  // This hook applies any active filters and returns only recipes
-  // that should be available for selection
-  const availableRecipes = useRecipeFiltering(recipeServiceFunctions);
-
   // Track the current list of selected recipes for crafting
-  // This state is managed here to coordinate between RecipeManagement
-  // (which handles selection) and ComponentList (which displays results)
   const [currentRecipeList, setCurrentRecipeList] = React.useState([]);
 
   // Calculate the consolidated raw materials needed for all selected recipes
-  // This hook processes the recipe list and breaks down complex recipes
-  // into their base components, handling nested dependencies
   const consolidatedComponents = useComponentCalculation(
     currentRecipeList,
     recipeServiceFunctions
@@ -62,7 +48,7 @@ function App() {
     setCurrentRecipeList(newRecipeList);
   }, []);
 
-  // Add this debug before calling useComponentCalculation
+  // Debug logging
   useEffect(() => {
     console.log(
       "🔍 Current recipe list being passed to calculation:",
@@ -79,21 +65,15 @@ function App() {
   // Display error message if recipe data failed to load
   // This could be due to network issues, malformed data, or missing files
   if (error) {
-    return <ErrorState message={`Loading recipes: ${error}`} />;
+    return (
+      <ErrorState message={error} onRetry={() => window.location.reload()} />
+    );
   }
 
   // Ensure state managers initialized successfully
   // This is a safety check to prevent runtime errors
   if (!stateManagers) {
-    return <ErrorState message="Could not initialize application state" />;
-  }
-
-  // Verify that recipe data contains usable recipes
-  // An empty recipe list indicates a data problem that should be addressed
-  if (availableRecipes.length === 0) {
-    return (
-      <ErrorState message="No recipes available. Please check your recipe data." />
-    );
+    return <ErrorState message="Failed to initialize application state" />;
   }
 
   // Render the main application interface

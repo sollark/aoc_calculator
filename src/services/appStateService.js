@@ -82,39 +82,31 @@ export const createStateManagers = (recipeServiceFunctions) => {
     return {
       addRecipe: (currentList, recipeData) => {
         try {
-          // Use the recipe's actual type, not "recipes"
-          const recipeType = recipeData.type;
+          // Check if recipe is already in the list
+          const isAlreadyAdded = currentList.some(
+            (item) => item.recipe && item.recipe.id === recipeData.id
+          );
 
-          if (!recipeType) {
+          if (isAlreadyAdded) {
             return {
               success: false,
               newList: currentList,
-              message: "Recipe type not found",
+              message: "Recipe already in list",
             };
           }
 
-          const result = addRecipe(recipeType, recipeData);
-
-          if (result.success) {
-            // For a recipe list, we want to add to the current list, not the database
-            // This should just add to the current list for calculation purposes
-            const newListItem = {
-              id: Date.now(), // Unique ID for the list item
-              recipe: recipeData,
-              quantity: 1, // Default quantity
-            };
-
-            return {
-              success: true,
-              newList: [...currentList, newListItem],
-              message: "Recipe added to list",
-            };
-          }
+          // For a recipe list, we just add to the current list for calculation purposes
+          // No need to save to JSON file
+          const newListItem = {
+            id: Date.now(), // Unique ID for the list item
+            recipe: recipeData,
+            quantity: 1, // Default quantity
+          };
 
           return {
-            success: false,
-            newList: currentList,
-            message: result.message,
+            success: true,
+            newList: [...currentList, newListItem],
+            message: "Recipe added to list",
           };
         } catch (error) {
           console.error("Error adding recipe:", error);
