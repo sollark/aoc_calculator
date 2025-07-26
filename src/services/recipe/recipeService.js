@@ -18,7 +18,7 @@ import { processRecipeListToRawComponents } from "./recipeCalculationService.js"
 export const getRecipesByType = (type) => {
   try {
     console.log(`Getting recipes by type: ${type}`);
-    const recipes = fileOps.readRecipesSync();
+    const recipes = fileOps.readRecipes();
 
     if (!recipes || !recipes[type]) {
       console.warn(`No recipes found for type: ${type}`);
@@ -45,7 +45,7 @@ export const getRecipesByType = (type) => {
 export const getAllRecipes = () => {
   try {
     console.log("Getting all recipes");
-    const recipes = fileOps.readRecipesSync();
+    const recipes = fileOps.readRecipes();
     const flattened = transformers.flattenRecipes(recipes);
     console.log(`Found ${flattened.length} total recipes`);
     return flattened;
@@ -111,7 +111,7 @@ export const getRecipeById = (id) => {
 export const addRecipe = (type, recipe) => {
   try {
     console.log(`Adding recipe to ${type}:`, recipe);
-    const currentData = fileOps.readRecipesSync();
+    const currentData = fileOps.readRecipes();
     // Use arrayOps instead of transformers for CRUD operations
     const updatedData = arrayOps.addRecipeToData(currentData, type, recipe);
 
@@ -142,7 +142,7 @@ export const addRecipe = (type, recipe) => {
 export const updateRecipe = (id, updates) => {
   try {
     console.log(`Updating recipe ${id} with:`, updates);
-    const currentData = fileOps.readRecipesSync();
+    const currentData = fileOps.readRecipes();
 
     // Find recipe location first
     const location = transformers.findRecipeLocation(id, currentData);
@@ -188,7 +188,7 @@ export const updateRecipe = (id, updates) => {
 export const deleteRecipe = (id) => {
   try {
     console.log(`Deleting recipe with ID: ${id}`);
-    const currentData = fileOps.readRecipesSync();
+    const currentData = fileOps.readRecipes();
 
     // Find recipe location first
     const location = transformers.findRecipeLocation(id, currentData);
@@ -298,7 +298,7 @@ export const getGatheringSkills = () => {
  */
 export const getStatistics = () => {
   try {
-    const recipes = fileOps.readRecipesSync();
+    const recipes = fileOps.readRecipes();
     const allRecipes = getAllRecipes();
 
     const stats = {
@@ -382,7 +382,7 @@ export const initialize = async () => {
       fileOps.writeRecipes(defaultData);
     }
 
-    const recipes = fileOps.readRecipesSync();
+    const recipes = fileOps.readRecipes();
     console.log("Recipe service initialized successfully");
 
     return {

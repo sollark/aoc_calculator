@@ -1,5 +1,6 @@
 import recipesData from "../../db/recipes.json";
 import { RecipeError } from "../../utils/errorHandler.js";
+import { RECIPE_TYPES, SKILL_LEVELS, GATHERING_SKILLS } from "./constants.js";
 
 // Use imported data directly
 let recipesCache = recipesData;
@@ -9,14 +10,6 @@ let recipesCache = recipesData;
  * @returns {Object} Complete recipes data
  */
 export const readRecipes = async () => {
-  return recipesCache;
-};
-
-/**
- * Read recipes synchronously (using imported data)
- * @returns {Object} Complete recipes data
- */
-export const readRecipesSync = () => {
   return recipesCache;
 };
 
@@ -61,7 +54,7 @@ export const recipesFileExists = () => {
  * Create backup of recipes data
  * @returns {string} Backup file name
  */
-export const createBackup = () => {
+/* export const createBackup = () => {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupFileName = `recipes-backup-${timestamp}.json`;
@@ -82,7 +75,7 @@ export const createBackup = () => {
   } catch (error) {
     throw new RecipeError(`Failed to create backup: ${error.message}`);
   }
-};
+}; */
 
 /**
  * Initialize recipes data with default structure
@@ -90,36 +83,56 @@ export const createBackup = () => {
  */
 export const initializeRecipes = () => {
   const defaultData = {
-    raw_components: [],
-    intermediate_recipes: [],
-    crafted_items: [],
+    [RECIPE_TYPES.RAW_COMPONENTS]: [],
+    [RECIPE_TYPES.INTERMEDIATE_RECIPES]: [],
+    [RECIPE_TYPES.CRAFTED_ITEMS]: [],
     artisan_levels: [
-      { level: "novice", order: 1, description: "Entry level crafting" },
       {
-        level: "apprentice",
+        level: SKILL_LEVELS.NOVICE,
+        order: 1,
+        description: "Entry level crafting",
+      },
+      {
+        level: SKILL_LEVELS.APPRENTICE,
         order: 2,
         description: "Intermediate crafting skills",
       },
       {
-        level: "journeyman",
+        level: SKILL_LEVELS.JOURNEYMAN,
         order: 3,
         description: "Advanced crafting techniques",
       },
-      { level: "expert", order: 4, description: "Master level crafting" },
+      {
+        level: SKILL_LEVELS.EXPERT,
+        order: 4,
+        description: "Master level crafting",
+      },
     ],
     gathering_skills: [
-      { skill: "mining", description: "Extract ores and stones from nodes" },
-      { skill: "lumberjacking", description: "Harvest wood from trees" },
-      { skill: "herbalism", description: "Gather herbs and plants" },
       {
-        skill: "fishing",
+        skill: GATHERING_SKILLS.MINING,
+        description: "Extract ores and stones from nodes",
+      },
+      {
+        skill: GATHERING_SKILLS.LUMBERJACKING,
+        description: "Harvest wood from trees",
+      },
+      {
+        skill: GATHERING_SKILLS.HERBALISM,
+        description: "Gather herbs and plants",
+      },
+      {
+        skill: GATHERING_SKILLS.FISHING,
         description: "Catch fish from rivers, lakes, and oceans",
       },
       {
-        skill: "hunting",
+        skill: GATHERING_SKILLS.HUNTING,
         description: "Hunt animals for hides, bones, and meat",
       },
-      { skill: "vendor", description: "Items purchased from vendors" },
+      {
+        skill: GATHERING_SKILLS.VENDOR,
+        description: "Items purchased from vendors",
+      },
     ],
   };
 

@@ -40,4 +40,24 @@ export const ARTISAN_SKILLS = {
   ARMORSMITHING: "armorsmithing",
   TAILORING: "tailoring",
   SCRIBE: "scribe",
+  WEAVING: "weaving",
+  JEWEL_CUTTING: "jewel_cutting",
+  FISHING_PROCESSING: "fishing_processing",
+};
+
+export const ITEM_TYPES = {
+  RAW: "raw",
+  INTERMEDIATE: "intermediate",
+  CRAFTED: "crafted",
+};
+
+export const SPECIAL_CATEGORIES = {
+  SPECIAL: "special",
+  RESERVED: "reserved",
+  VENDOR: "vendor",
+  TOOLS: "tools",
+  SCROLLS: "scrolls",
+  FOOD: "food",
+  POTIONS: "potions",
+  OTHER_CONSUMABLES: "other_consumables",
 };

@@ -1,4 +1,9 @@
-import recipesData from "../db/recipes.json";
+import { readRecipes } from "../services/recipe/jsonFileOperations.js";
+import {
+  RECIPE_TYPES,
+  GATHERING_SKILLS,
+  ARTISAN_SKILLS,
+} from "../services/recipe/constants.js";
 
 /**
  * Recipe ID Assignment Rules for Ashes of Creation Calculator
@@ -8,32 +13,36 @@ import recipesData from "../db/recipes.json";
 export const ID_RANGES = {
   // Raw Components (1000-1999)
   RAW_COMPONENTS: {
-    MINING: {
+    [GATHERING_SKILLS.MINING]: {
       start: 1000,
       end: 1099,
       description: "Mining materials (ores, stones, gems)",
     },
-    LUMBERJACKING: {
+    [GATHERING_SKILLS.LUMBERJACKING]: {
       start: 1100,
       end: 1199,
       description: "Wood and lumber materials",
     },
-    HERBALISM: {
+    [GATHERING_SKILLS.HERBALISM]: {
       start: 1200,
       end: 1299,
       description: "Herbs, plants, flowers",
     },
-    FISHING: {
+    [GATHERING_SKILLS.FISHING]: {
       start: 1300,
       end: 1399,
       description: "Fish, aquatic plants, shells",
     },
-    HUNTING: {
+    [GATHERING_SKILLS.HUNTING]: {
       start: 1400,
       end: 1499,
       description: "Leather, bones, meat, fur",
     },
-    VENDOR: { start: 1500, end: 1599, description: "Vendor purchased items" },
+    [GATHERING_SKILLS.VENDOR]: {
+      start: 1500,
+      end: 1599,
+      description: "Vendor purchased items",
+    },
     SPECIAL: { start: 1600, end: 1699, description: "Special/Event materials" },
     RESERVED: {
       start: 1700,
@@ -44,27 +53,27 @@ export const ID_RANGES = {
 
   // Intermediate Recipes (2000-3999) - Organized by Artisan Skill
   INTERMEDIATE_RECIPES: {
-    ALCHEMY: {
+    [ARTISAN_SKILLS.ALCHEMY]: {
       start: 2000,
       end: 2199,
       description: "Alchemy processing recipes",
     },
-    LUMBER_MILLING: {
+    [ARTISAN_SKILLS.LUMBER_MILLING]: {
       start: 2200,
       end: 2399,
       description: "Lumber milling recipes",
     },
-    METALWORKING: {
+    [ARTISAN_SKILLS.METALWORKING]: {
       start: 2400,
       end: 2599,
       description: "Metalworking and smelting recipes",
     },
-    STONEMASONRY: {
+    [ARTISAN_SKILLS.STONEMASONRY]: {
       start: 2600,
       end: 2799,
       description: "Stonemasonry processing recipes",
     },
-    LEATHERWORKING: {
+    [ARTISAN_SKILLS.LEATHERWORKING]: {
       start: 2800,
       end: 2999,
       description: "Leatherworking processing recipes",
@@ -74,7 +83,7 @@ export const ID_RANGES = {
       end: 3199,
       description: "Weaving and textile recipes",
     },
-    COOKING: {
+    [ARTISAN_SKILLS.COOKING]: {
       start: 3200,
       end: 3399,
       description: "Cooking intermediate recipes",
@@ -99,12 +108,12 @@ export const ID_RANGES = {
   // Crafted Items (4000-7999)
   CRAFTED_ITEMS: {
     // Weapons by Artisan Profession (4000-5999)
-    WEAPONSMITHING: {
+    [ARTISAN_SKILLS.WEAPONSMITHING]: {
       start: 4000,
       end: 4399,
       description: "Weaponsmithing crafted weapons",
     },
-    BOWCRAFT: {
+    [ARTISAN_SKILLS.BOWCRAFT]: {
       start: 4400,
       end: 4799,
       description: "Bowcraft weapons (bows, crossbows)",
@@ -121,7 +130,7 @@ export const ID_RANGES = {
     },
 
     // Armor by Artisan Profession (6000-6999)
-    ARMORSMITHING: {
+    [ARTISAN_SKILLS.ARMORSMITHING]: {
       start: 6000,
       end: 6299,
       description: "Heavy armor (plate, mail)",
@@ -131,7 +140,7 @@ export const ID_RANGES = {
       end: 6599,
       description: "Light armor (leather, studded)",
     },
-    TAILORING: {
+    [ARTISAN_SKILLS.TAILORING]: {
       start: 6600,
       end: 6899,
       description: "Cloth armor (robes, garments)",
@@ -198,22 +207,29 @@ export const getIdRange = (itemType, category) => {
  * Gets all existing IDs from recipes data
  * @returns {Array} Array of all existing IDs
  */
-const getAllExistingIds = () => {
+const getAllExistingIds = async () => {
+  const recipesData = await readRecipes();
   const allIds = [];
 
   // Get IDs from raw components
-  if (recipesData.raw_components) {
-    allIds.push(...recipesData.raw_components.map((item) => item.id));
+  if (recipesData[RECIPE_TYPES.RAW_COMPONENTS]) {
+    allIds.push(
+      ...recipesData[RECIPE_TYPES.RAW_COMPONENTS].map((item) => item.id)
+    );
   }
 
   // Get IDs from intermediate recipes
-  if (recipesData.intermediate_recipes) {
-    allIds.push(...recipesData.intermediate_recipes.map((item) => item.id));
+  if (recipesData[RECIPE_TYPES.INTERMEDIATE_RECIPES]) {
+    allIds.push(
+      ...recipesData[RECIPE_TYPES.INTERMEDIATE_RECIPES].map((item) => item.id)
+    );
   }
 
   // Get IDs from crafted items
-  if (recipesData.crafted_items) {
-    allIds.push(...recipesData.crafted_items.map((item) => item.id));
+  if (recipesData[RECIPE_TYPES.CRAFTED_ITEMS]) {
+    allIds.push(
+      ...recipesData[RECIPE_TYPES.CRAFTED_ITEMS].map((item) => item.id)
+    );
   }
 
   return allIds;
@@ -226,14 +242,14 @@ const getAllExistingIds = () => {
  * @param {number} gap - Optional gap to leave (default: 1)
  * @returns {number|null} Next available ID or null if range is invalid
  */
-export const getNextAvailableId = (itemType, category, gap = 1) => {
+export const getNextAvailableId = async (itemType, category, gap = 1) => {
   const range = getIdRange(itemType, category);
   if (!range) {
     console.error(`Invalid item type "${itemType}" or category "${category}"`);
     return null;
   }
 
-  const existingIds = getAllExistingIds();
+  const existingIds = await getAllExistingIds();
   const idsInRange = existingIds.filter(
     (id) => id >= range.start && id <= range.end
   );
@@ -265,7 +281,7 @@ export const getNextAvailableId = (itemType, category, gap = 1) => {
  * @param {string} category - Expected category
  * @returns {Object} Validation result
  */
-export const validateId = (id, itemType, category) => {
+export const validateId = async (id, itemType, category) => {
   const range = getIdRange(itemType, category);
 
   if (!range) {
@@ -283,7 +299,7 @@ export const validateId = (id, itemType, category) => {
   }
 
   // Check if ID is already in use
-  const existingIds = getAllExistingIds();
+  const existingIds = await getAllExistingIds();
   const isUnique = !existingIds.includes(id);
 
   if (!isUnique) {
