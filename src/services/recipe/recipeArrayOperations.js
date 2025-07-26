@@ -1,24 +1,19 @@
 import { VALID_RECIPE_TYPES } from "./constants.js";
 import {
-  InvalidRecipeTypeError,
-  RecipeNotFoundError,
-} from "../../utils/errorHandler.js";
+  validateRecipeType,
+  validateRecipe,
+  validateUpdates,
+  validateArrayIndex,
+  validateBulkUpdates,
+  validateRecipesData,
+  validateNewRecipesArray,
+} from "./validators.js";
+import { RecipeNotFoundError } from "../../utils/errorHandler.js";
 
 /**
  * CRUD operations for recipe data manipulation
  * Pure functions that work with recipe data structures
  */
-
-/**
- * Validate recipe type
- * @param {string} type - Recipe type to validate
- * @throws {InvalidRecipeTypeError} If type is invalid
- */
-const validateRecipeType = (type) => {
-  if (!VALID_RECIPE_TYPES.includes(type)) {
-    throw new InvalidRecipeTypeError(type, VALID_RECIPE_TYPES);
-  }
-};
 
 /**
  * Add recipe to data structure
@@ -28,7 +23,9 @@ const validateRecipeType = (type) => {
  * @returns {Object} Updated recipes data
  */
 export const addRecipeToData = (recipes, type, recipe) => {
+  validateRecipesData(recipes);
   validateRecipeType(type);
+  validateRecipe(recipe);
 
   const updatedRecipes = { ...recipes };
   if (!updatedRecipes[type]) {
@@ -47,11 +44,15 @@ export const addRecipeToData = (recipes, type, recipe) => {
  * @returns {Object} Updated recipes data and recipe
  */
 export const updateRecipeInData = (recipes, type, index, updates) => {
+  validateRecipesData(recipes);
   validateRecipeType(type);
+  validateUpdates(updates);
 
-  if (!recipes[type] || index < 0 || index >= recipes[type].length) {
-    throw new RecipeNotFoundError(`Recipe at index ${index} in type ${type}`);
+  if (!recipes[type]) {
+    throw new RecipeNotFoundError(`Recipe type ${type} not found`);
   }
+
+  validateArrayIndex(recipes[type], index, `Recipe in type ${type}`);
 
   const updatedRecipes = { ...recipes };
   updatedRecipes[type] = [...updatedRecipes[type]];
@@ -74,11 +75,14 @@ export const updateRecipeInData = (recipes, type, index, updates) => {
  * @returns {Object} Updated recipes data and deleted recipe
  */
 export const removeRecipeFromData = (recipes, type, index) => {
+  validateRecipesData(recipes);
   validateRecipeType(type);
 
-  if (!recipes[type] || index < 0 || index >= recipes[type].length) {
-    throw new RecipeNotFoundError(`Recipe at index ${index} in type ${type}`);
+  if (!recipes[type]) {
+    throw new RecipeNotFoundError(`Recipe type ${type} not found`);
   }
+
+  validateArrayIndex(recipes[type], index, `Recipe in type ${type}`);
 
   const updatedRecipes = { ...recipes };
   const deletedRecipe = updatedRecipes[type][index];
@@ -98,7 +102,9 @@ export const removeRecipeFromData = (recipes, type, index) => {
  * @returns {Object} Updated recipes data
  */
 export const bulkAddRecipes = (recipes, type, newRecipes) => {
+  validateRecipesData(recipes);
   validateRecipeType(type);
+  validateNewRecipesArray(newRecipes);
 
   const updatedRecipes = { ...recipes };
   if (!updatedRecipes[type]) {
@@ -115,6 +121,9 @@ export const bulkAddRecipes = (recipes, type, newRecipes) => {
  * @returns {Object} Updated recipes data and results
  */
 export const bulkUpdateRecipes = (recipes, updates) => {
+  validateRecipesData(recipes);
+  validateBulkUpdates(updates);
+
   let updatedRecipes = { ...recipes };
   const results = [];
 
@@ -179,7 +188,9 @@ export const bulkUpdateRecipes = (recipes, updates) => {
  * @returns {Object} Updated recipes data
  */
 export const replaceRecipeType = (recipes, type, newRecipes) => {
+  validateRecipesData(recipes);
   validateRecipeType(type);
+  validateNewRecipesArray(newRecipes);
 
   return {
     ...recipes,
@@ -204,12 +215,14 @@ export const isRecipeAlreadyAdded = (recipeList, recipeData) => {
   );
 };
 
-export default {
+const recipeArrayOperations = {
   addRecipeToData,
   updateRecipeInData,
   removeRecipeFromData,
   bulkAddRecipes,
   bulkUpdateRecipes,
   replaceRecipeType,
-  isRecipeAlreadyAdded, // Add to exports
+  isRecipeAlreadyAdded,
 };
+
+export default recipeArrayOperations;

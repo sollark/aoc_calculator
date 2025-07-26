@@ -1,9 +1,10 @@
-import { VALID_RECIPE_TYPES } from "./constants.js";
+import { VALID_RECIPE_TYPES, RECIPE_TYPES } from "./constants.js";
 import {
   InvalidRecipeTypeError,
   ValidationError,
   DuplicateRecipeError,
-} from "utils/errorHandler.js";
+  RecipeNotFoundError,
+} from "../../utils/errorHandler.js";
 
 /**
  * Validate recipe type
@@ -62,11 +63,11 @@ export const validateUniqueId = (id, allRecipes) => {
  */
 export const validateRecipeStructure = (recipe, type) => {
   switch (type) {
-    case "raw_components":
+    case RECIPE_TYPES.RAW_COMPONENTS:
       validateRawComponent(recipe);
       break;
-    case "intermediate_recipes":
-    case "crafted_items":
+    case RECIPE_TYPES.INTERMEDIATE_RECIPES:
+    case RECIPE_TYPES.CRAFTED_ITEMS:
       validateCraftedRecipe(recipe);
       break;
     default:
@@ -134,4 +135,88 @@ export const validateUpdates = (updates) => {
   if ("id" in updates) {
     throw new ValidationError("id", "ID cannot be updated");
   }
+};
+
+/**
+ * Validate array index exists
+ * @param {Array} array - Array to check
+ * @param {number} index - Index to validate
+ * @param {string} context - Context for error message
+ * @throws {RecipeNotFoundError} If index is invalid
+ */
+export const validateArrayIndex = (array, index, context = "item") => {
+  if (!array || !Array.isArray(array)) {
+    throw new RecipeNotFoundError(`Invalid array for ${context}`);
+  }
+
+  if (index < 0 || index >= array.length) {
+    throw new RecipeNotFoundError(`${context} at index ${index} not found`);
+  }
+};
+
+/**
+ * Validate bulk update data structure
+ * @param {Array} updates - Array of update objects
+ * @throws {ValidationError} If structure is invalid
+ */
+export const validateBulkUpdates = (updates) => {
+  if (!Array.isArray(updates)) {
+    throw new ValidationError("updates", "Bulk updates must be an array");
+  }
+
+  for (let i = 0; i < updates.length; i++) {
+    const update = updates[i];
+
+    if (!update || typeof update !== "object") {
+      throw new ValidationError(`updates[${i}]`, "Update must be an object");
+    }
+
+    if (!update.id) {
+      throw new ValidationError(`updates[${i}].id`, "Update must have an ID");
+    }
+
+    if (!update.updates || typeof update.updates !== "object") {
+      throw new ValidationError(
+        `updates[${i}].updates`,
+        "Update must have updates object"
+      );
+    }
+
+    // Validate individual update data
+    validateUpdates(update.updates);
+  }
+};
+
+/**
+ * Validate recipes data structure
+ * @param {Object} recipes - Recipes data to validate
+ * @throws {ValidationError} If structure is invalid
+ */
+export const validateRecipesData = (recipes) => {
+  if (!recipes || typeof recipes !== "object") {
+    throw new ValidationError("recipes", "Recipes must be an object");
+  }
+};
+
+/**
+ * Validate new recipes array for bulk operations
+ * @param {Array} newRecipes - Array of recipes to validate
+ * @throws {ValidationError} If array is invalid
+ */
+export const validateNewRecipesArray = (newRecipes) => {
+  if (!Array.isArray(newRecipes)) {
+    throw new ValidationError("newRecipes", "New recipes must be an array");
+  }
+
+  // Validate each recipe in the array
+  newRecipes.forEach((recipe, index) => {
+    try {
+      validateRecipe(recipe);
+    } catch (error) {
+      throw new ValidationError(
+        `newRecipes[${index}]`,
+        `Recipe at index ${index}: ${error.message}`
+      );
+    }
+  });
 };
