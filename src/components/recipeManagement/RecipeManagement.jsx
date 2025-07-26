@@ -1,167 +1,111 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
-import RecipeSelector from "../recipeSelector/RecipeSelector";
-import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList";
 import { useRecipeContext } from "../../contexts/RecipeContext.js";
-import { useRecipeSelection } from "../../hooks/useRecipeSelection";
-import { useRecipeList } from "../../hooks/useRecipeList";
-import { useRecipeStats } from "../../hooks/useRecipeStats";
-import { useRecipeValidation } from "../../hooks/useRecipeValidation";
+import { useRecipeList } from "../../hooks/useRecipeList.js";
+import { useRecipeSelection } from "../../hooks/useRecipeSelection.js";
+import { useRecipeStats } from "../../hooks/useRecipeStats.js";
+import { useRecipeValidation } from "../../hooks/useRecipeValidation.js";
+import RecipeSelector from "../recipeSelector/RecipeSelector.jsx";
+import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList.jsx"; // Use your existing component
 import "./recipeManagement.css";
 
-/**
- * Self-contained recipe management component
- * Gets all recipes from context using recipeService
- */
 const RecipeManagement = ({ onRecipeListChange }) => {
-  // Get recipes from context (not from service directly)
-  const { availableRecipes, isLoading, error, recipeService, stateManagers } =
+  // Get recipes from context
+  const { availableRecipes, isLoading, error, stateManagers } =
     useRecipeContext();
 
-  // Use availableRecipes from context instead of calling service directly
-  const allRecipes = availableRecipes || [];
-
-  // Internal state management using custom hooks
-  const { selectedRecipe, handleRecipeChange } = useRecipeSelection(allRecipes);
-  const {
-    recipeList,
-    handleAddRecipe: addRecipe,
-    handleRemoveRecipe,
-    handleClearList: clearList,
-  } = useRecipeList(stateManagers);
-
-  // Statistics and validation
-  const recipeStats = useRecipeStats(allRecipes, recipeList);
-  const recipeValidation = useRecipeValidation(
-    selectedRecipe,
-    recipeList,
-    allRecipes,
-    recipeService
+  // Use availableRecipes from context
+  const allRecipes = React.useMemo(
+    () => availableRecipes || [],
+    [availableRecipes]
   );
 
-  // Notify parent component when recipe list changes
-  React.useEffect(() => {
+  // Initialize hooks with correct data
+  const { selectedRecipe, handleRecipeChange } = useRecipeSelection(allRecipes);
+  const { recipeList, handleAddRecipe, handleRemoveRecipe, handleClearList } =
+    useRecipeList(stateManagers);
+  const stats = useRecipeStats(allRecipes, recipeList);
+  const validation = useRecipeValidation(
+    selectedRecipe,
+    recipeList,
+    allRecipes
+  );
+
+  // Handle add recipe button click
+  const handleAddClick = useCallback(
+    async (event) => {
+      event.preventDefault();
+      console.log("🔧 Add recipe button clicked!");
+      console.log("📋 Selected recipe:", selectedRecipe?.name);
+      console.log("✅ Can add selected:", validation.canAddSelected);
+      console.log("📚 All recipes count:", allRecipes?.length);
+      console.log("🏗️ Current recipe list:", recipeList);
+      console.log("🔍 Validation details:", validation);
+
+      // Debug logs for structures
+      console.log("🔍 Selected recipe full structure:", {
+        name: selectedRecipe?.name,
+        id: selectedRecipe?.id,
+        type: typeof selectedRecipe,
+        isString: typeof selectedRecipe === "string",
+        fullObject: selectedRecipe,
+      });
+      console.log("🔍 Recipe list full structure:", recipeList);
+      console.log("🔍 Validation breakdown:", {
+        hasSelection: validation.hasSelection,
+        canAddSelected: validation.canAddSelected,
+        isAlreadyInList: validation.isAlreadyInList,
+        canClearList: validation.canClearList,
+      });
+
+      // Check validation
+      if (!validation.canAddSelected) {
+        console.log("❌ Cannot add recipe: validation failed");
+        if (!validation.hasSelection) {
+          console.log("❌ Reason: No recipe selected");
+        } else if (validation.isAlreadyInList) {
+          console.log("❌ Reason: Recipe already in list");
+        } else {
+          console.log(
+            "❌ Reason: Unknown validation issue - check useRecipeValidation logic"
+          );
+        }
+        return;
+      }
+
+      if (!selectedRecipe) {
+        console.log("❌ No recipe selected");
+        return;
+      }
+
+      try {
+        console.log("🎯 Recipe to add:", selectedRecipe);
+        console.log("➕ Calling handleAddRecipe with:", selectedRecipe);
+
+        const result = await handleAddRecipe(selectedRecipe);
+        console.log("📤 AddRecipe result:", result);
+
+        if (result && result.success) {
+          console.log("✅ Recipe added successfully!");
+        } else {
+          console.warn("⚠️ AddRecipe returned unsuccessful result:", result);
+        }
+      } catch (error) {
+        console.error("❌ Error adding recipe:", error);
+      }
+    },
+    [selectedRecipe, validation, handleAddRecipe, allRecipes, recipeList]
+  );
+
+  // Update parent when recipe list changes
+  useEffect(() => {
+    console.log("🎯 Recipe list updated:", recipeList);
     if (onRecipeListChange) {
       onRecipeListChange(recipeList);
     }
   }, [recipeList, onRecipeListChange]);
 
-  /**
-   * Enhanced add recipe handler with validation
-   */
-  const handleAddRecipeWithValidation = useCallback(() => {
-    console.log("🔧 Add recipe button clicked!");
-    console.log("📋 Selected recipe:", selectedRecipe);
-    console.log("✅ Can add selected:", recipeValidation.canAddSelected);
-    console.log("📚 All recipes count:", allRecipes.length);
-    console.log("🏗️ Current recipe list:", recipeList);
-
-    if (!recipeValidation.canAddSelected) {
-      console.warn("❌ Cannot add recipe: validation failed");
-      console.log("🔍 Validation details:", recipeValidation);
-      return;
-    }
-
-    // Find the actual recipe object by name
-    const recipeToAdd = allRecipes.find(
-      (recipe) => recipe.name === selectedRecipe
-    );
-
-    console.log("🎯 Recipe to add:", recipeToAdd);
-
-    if (!recipeToAdd) {
-      console.error("❌ Recipe not found:", selectedRecipe);
-      return;
-    }
-
-    console.log("➕ Calling addRecipe with:", recipeToAdd);
-
-    // Pass the recipe object, not just the name
-    const result = addRecipe(recipeToAdd);
-    console.log("📤 AddRecipe result:", result);
-  }, [addRecipe, selectedRecipe, allRecipes, recipeList, recipeValidation]);
-
-  /**
-   * Enhanced clear list handler with confirmation
-   */
-  const handleClearListWithConfirmation = useCallback(() => {
-    if (recipeStats.selectedCount > 0) {
-      const shouldClear = window.confirm(
-        `Are you sure you want to clear all ${recipeStats.selectedCount} recipes?`
-      );
-
-      if (shouldClear) {
-        clearList();
-      }
-    }
-  }, [clearList, recipeStats.selectedCount]);
-
-  /**
-   * Render recipe selector section
-   */
-  const renderRecipeSelector = useCallback(
-    () => (
-      <section className="recipe-management__selector-section">
-        <h3 className="recipe-management__section-title">Recipe Selection</h3>
-        <RecipeSelector
-          recipes={allRecipes}
-          selectedRecipe={selectedRecipe}
-          onRecipeChange={handleRecipeChange}
-          onAddRecipe={handleAddRecipeWithValidation}
-          recipeListCount={recipeStats.selectedCount}
-          disabled={!recipeValidation.hasSelection}
-          canAdd={recipeValidation.canAddSelected}
-        />
-        <RecipeSelectionStats
-          stats={recipeStats}
-          validation={recipeValidation}
-        />
-      </section>
-    ),
-    [
-      allRecipes,
-      selectedRecipe,
-      handleRecipeChange,
-      handleAddRecipeWithValidation,
-      recipeStats,
-      recipeValidation,
-    ]
-  );
-
-  /**
-   * Render recipe list section
-   */
-  const renderRecipeList = useCallback(
-    () => (
-      <section className="recipe-management__list-section">
-        <h3 className="recipe-management__section-title">Selected Recipes</h3>
-        <ManageableRecipeList
-          recipes={recipeList}
-          onRemoveRecipe={handleRemoveRecipe}
-          onClearList={handleClearListWithConfirmation}
-          showStats={true}
-          stats={recipeStats}
-        />
-      </section>
-    ),
-    [
-      recipeList,
-      handleRemoveRecipe,
-      handleClearListWithConfirmation,
-      recipeStats,
-    ]
-  );
-
-  // Add this debug after the recipeList state is updated
-  useEffect(() => {
-    console.log("🎯 Recipe list updated:", recipeList);
-    recipeList.forEach((item, index) => {
-      console.log(`🎯 Recipe ${index}:`, item);
-      console.log(`🎯 Recipe ${index} data:`, item.recipe);
-    });
-  }, [recipeList]);
-
-  // Debug logging for RecipeManagement (allRecipes)
+  // Debug logging
   useEffect(() => {
     console.log(
       "📋 RecipeManagement - availableRecipes from context:",
@@ -171,43 +115,102 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     console.log("📋 RecipeManagement - error:", error);
   }, [availableRecipes, isLoading, error]);
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="recipe-management">
+        <div className="recipe-management__loading">Loading recipes...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="recipe-management">
+        <div className="recipe-management__error">
+          Error loading recipes: {error}
+        </div>
+      </div>
+    );
+  }
+
+  // Transform recipeList to match ManageableRecipeList expectations
+  const transformedRecipeList = recipeList.map((item) => {
+    console.log("🔍 Transforming item:", item);
+
+    // Handle case where recipe is stored as string (current bug)
+    if (typeof item.recipe === "string") {
+      return {
+        id: item.id,
+        name: item.recipe, // Use the string as name
+        quantity: item.quantity || 1,
+        error: "Recipe stored as string instead of object",
+      };
+    }
+
+    // Handle correct case where recipe is an object
+    return {
+      id: item.id,
+      name: item.recipe?.name || "Unknown Recipe",
+      ...item.recipe, // Spread the recipe data
+      quantity: item.quantity || 1,
+    };
+  });
+
   return (
     <div className="recipe-management">
-      {renderRecipeSelector()}
-      {renderRecipeList()}
+      <div className="recipe-management__selector">
+        <RecipeSelector
+          recipes={allRecipes}
+          selectedRecipe={selectedRecipe}
+          onRecipeChange={handleRecipeChange}
+          onAddRecipe={handleAddClick}
+          recipeListCount={recipeList.length}
+        />
+        <RecipeSelectionStats stats={stats} validation={validation} />
+      </div>
+
+      <div className="recipe-management__list">
+        <ManageableRecipeList
+          recipes={transformedRecipeList}
+          onRemoveRecipe={handleRemoveRecipe}
+          onClearList={handleClearList}
+        />
+      </div>
     </div>
   );
 };
 
 /**
- * Pure component for displaying recipe selection statistics
+ * Component for displaying recipe selection statistics
  */
 const RecipeSelectionStats = ({ stats, validation }) => (
   <div className="recipe-management__stats">
     <div className="recipe-management__stat-group">
       <span className="recipe-management__stat">
-        Total Available: {stats.totalRecipes}
+        Total Available: {stats?.totalRecipes || 0}
       </span>
       <span className="recipe-management__stat">
-        Selected: {stats.selectedCount}
+        Selected: {stats?.selectedCount || 0}
       </span>
       <span className="recipe-management__stat">
-        Remaining: {stats.availableCount}
+        Remaining: {stats?.availableCount || 0}
       </span>
     </div>
 
-    {stats.duplicateCount > 0 && (
+    {stats?.duplicateCount > 0 && (
       <div className="recipe-management__warning">
         ⚠️ {stats.duplicateCount} duplicate recipes detected
       </div>
     )}
 
     <div className="recipe-management__status">
-      {validation.canAddSelected ? (
+      {validation?.canAddSelected ? (
         <span className="recipe-management__status--ready">
           ✅ Ready to add recipe
         </span>
-      ) : validation.hasSelection ? (
+      ) : validation?.hasSelection ? (
         <span className="recipe-management__status--duplicate">
           ⚠️ Recipe already in list
         </span>
@@ -220,27 +223,26 @@ const RecipeSelectionStats = ({ stats, validation }) => (
   </div>
 );
 
-/**
- * Simplified PropTypes
- */
+// PropTypes
 RecipeManagement.propTypes = {
-  onRecipeListChange: PropTypes.func, // Optional callback for parent updates
+  onRecipeListChange: PropTypes.func,
 };
 
 RecipeSelectionStats.propTypes = {
   stats: PropTypes.shape({
-    totalRecipes: PropTypes.number.isRequired,
-    selectedCount: PropTypes.number.isRequired,
-    availableCount: PropTypes.number.isRequired,
-    duplicateCount: PropTypes.number.isRequired,
-    hasRecipes: PropTypes.bool.isRequired,
-    canAddMore: PropTypes.bool.isRequired,
-  }).isRequired,
+    totalRecipes: PropTypes.number,
+    selectedCount: PropTypes.number,
+    availableCount: PropTypes.number,
+    duplicateCount: PropTypes.number,
+    hasRecipes: PropTypes.bool,
+    canAddMore: PropTypes.bool,
+  }),
   validation: PropTypes.shape({
-    canAddSelected: PropTypes.bool.isRequired,
-    canClearList: PropTypes.bool.isRequired,
-    hasSelection: PropTypes.bool.isRequired,
-  }).isRequired,
+    canAddSelected: PropTypes.bool,
+    canClearList: PropTypes.bool,
+    hasSelection: PropTypes.bool,
+    isAlreadyInList: PropTypes.bool,
+  }),
 };
 
 export default RecipeManagement;

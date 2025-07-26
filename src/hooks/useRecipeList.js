@@ -1,57 +1,55 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { createStateManagers } from "../services/appStateService";
 
 /**
  * Custom hook for managing recipe list operations
- * @param {Object} stateManagers - State management functions
+ * @param {Object} recipeServiceFunctions - Recipe service functions
  * @returns {Object} Recipe list state and handlers
  */
-export const useRecipeList = (stateManagers) => {
+export const useRecipeList = (recipeServiceFunctions) => {
   const [recipeList, setRecipeList] = useState([]);
 
+  // Create stateManagers inside this hook, using the local setRecipeList
+  const stateManagers = useMemo(() => {
+    if (!recipeServiceFunctions) return null;
+
+    console.log("🔍 Creating stateManagers with:");
+    console.log("🔍 setRecipeList type:", typeof setRecipeList);
+    console.log("🔍 recipeList length:", recipeList.length);
+
+    return createStateManagers(
+      recipeServiceFunctions,
+      setRecipeList, // ← Now this is the actual function
+      () => recipeList // ← Now this returns current state
+    );
+  }, [recipeServiceFunctions, recipeList]);
+
+  // Make sure the state updates properly after adding a recipe
   const handleAddRecipe = useCallback(
-    (selectedRecipe) => {
-      console.log("🔍 handleAddRecipe called with:", selectedRecipe);
-      console.log("🔍 stateManagers:", stateManagers);
-      console.log("🔍 stateManagers.recipeList:", stateManagers?.recipeList);
+    async (recipe) => {
+      console.log("🔍 handleAddRecipe called with:", recipe);
+      console.log("🔍 Recipe type:", typeof recipe);
+      console.log("🔍 Recipe structure:", recipe);
 
-      if (!stateManagers?.recipeList) {
-        console.error(
-          "❌ Failed to add recipe: stateManagers.recipeList not available"
-        );
-        return;
+      if (!stateManagers?.recipeList?.addRecipe) {
+        console.error("❌ addRecipe function not available in stateManagers");
+        return { success: false, message: "addRecipe function not available" };
       }
 
-      if (!selectedRecipe) {
-        console.error("❌ Failed to add recipe: No recipe selected");
-        return;
-      }
+      try {
+        const result = await stateManagers.recipeList.addRecipe(recipe);
+        console.log("🔍 addRecipe result:", result);
 
-      console.log(
-        "🔍 Available functions in stateManagers.recipeList:",
-        Object.keys(stateManagers.recipeList)
-      );
+        // The setState callback in appStateService.js will handle the state update
+        // No need to manually update here since we're using the callback approach
 
-      if (!stateManagers.recipeList.addRecipe) {
-        console.error(
-          "❌ Failed to add recipe: addRecipe function not available"
-        );
-        return;
-      }
-
-      const result = stateManagers.recipeList.addRecipe(
-        recipeList,
-        selectedRecipe
-      );
-
-      console.log("🔍 addRecipe result:", result);
-
-      if (result.success) {
-        setRecipeList(result.newList);
-      } else {
-        console.warn("Failed to add recipe:", result.message);
+        return result;
+      } catch (error) {
+        console.error("❌ Error in handleAddRecipe:", error);
+        return { success: false, message: error.message };
       }
     },
-    [stateManagers, recipeList]
+    [stateManagers]
   );
 
   const handleRemoveRecipe = useCallback(

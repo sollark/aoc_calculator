@@ -194,7 +194,7 @@ export const sortRecipes = (recipes, sortBy = "name", sortOrder = "asc") => {
   return sortByField(recipes, sortBy, sortOrder);
 };
 
-export default {
+const sortingFunctions = {
   sortByName,
   sortById,
   sortByType,
@@ -207,3 +207,5 @@ export default {
   sortRecipes,
   sortFunctions,
 };
+
+export default sortingFunctions;

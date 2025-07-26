@@ -6,23 +6,51 @@ import { initializeDefaultRecipe } from "../services/appStateService";
  * @param {Array} availableRecipes - Available recipes to choose from
  * @returns {Object} Recipe selection state and handlers
  */
-export const useRecipeSelection = (availableRecipes) => {
-  const [selectedRecipe, setSelectedRecipe] = useState("");
+export const useRecipeSelection = (allRecipes) => {
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   // Auto-select default recipe when recipes become available
   useEffect(() => {
-    if (availableRecipes.length > 0 && !selectedRecipe) {
-      const defaultRecipe = initializeDefaultRecipe(
-        availableRecipes,
-        selectedRecipe
-      );
+    if (allRecipes.length > 0 && !selectedRecipe) {
+      const defaultRecipe = initializeDefaultRecipe(allRecipes, selectedRecipe);
       setSelectedRecipe(defaultRecipe);
     }
-  }, [availableRecipes, selectedRecipe]);
+  }, [allRecipes, selectedRecipe]);
 
-  const handleRecipeChange = useCallback((recipeName) => {
-    setSelectedRecipe(recipeName);
-  }, []);
+  const handleRecipeChange = (recipeInput) => {
+    console.log("🔍 handleRecipeChange called with:", recipeInput);
+
+    if (!recipeInput) {
+      setSelectedRecipe(null);
+      return;
+    }
+
+    // If it's already a full recipe object, use it directly
+    if (typeof recipeInput === "object" && recipeInput.id) {
+      console.log("🔍 Received full recipe object:", recipeInput);
+      setSelectedRecipe(recipeInput);
+      return;
+    }
+
+    // If it's a string (recipe name), find the full recipe
+    if (typeof recipeInput === "string") {
+      const foundRecipe = allRecipes.find(
+        (recipe) => recipe.name === recipeInput
+      );
+
+      if (foundRecipe) {
+        console.log("🔍 Found full recipe:", foundRecipe);
+        setSelectedRecipe(foundRecipe);
+      } else {
+        console.warn("⚠️ Recipe not found:", recipeInput);
+        setSelectedRecipe(null);
+      }
+      return;
+    }
+
+    console.error("❌ Invalid recipe input:", recipeInput);
+    setSelectedRecipe(null);
+  };
 
   return {
     selectedRecipe,

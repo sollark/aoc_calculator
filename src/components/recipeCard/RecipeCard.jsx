@@ -5,7 +5,7 @@ import { recipePropType } from "../../types/recipePropTypes";
 
 const RecipeCard = ({
   recipeData,
-  recipe, // Add this prop to handle the nested structure
+  recipe,
   playerLevel = 1,
   playerArtisanLevel = "novice",
   showRequirements = true,
@@ -17,23 +17,20 @@ const RecipeCard = ({
   const [quantity, setQuantity] = useState(0);
   const [playerHasQuantity, setPlayerHasQuantity] = useState(0);
 
-  // Handle both data structures - direct recipeData or nested recipe
-  const actualRecipeData = recipeData?.recipe || recipeData || recipe;
-
-  console.log(`🔍 Actual recipe data being used:`, actualRecipeData);
-
-  if (!actualRecipeData) {
+  // The issue is here - fix the data extraction
+  if (!recipeData) {
     console.warn("No recipe data available");
     return null;
   }
 
+  // Extract the main recipe info and nested recipe details
   const {
     name,
     icon,
     description,
     requirements = { playerLevel: 0, artisanLevel: "novice" },
     recipe: recipeDetails = {},
-  } = actualRecipeData;
+  } = recipeData;
 
   const { workStation, artisanSkill, components = [] } = recipeDetails;
 

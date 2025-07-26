@@ -1,4 +1,4 @@
-import { VALID_RECIPE_TYPES } from "./constants.js";
+import { VALID_RECIPE_TYPES } from "../constants.js";
 import {
   validateRecipeType,
   validateRecipe,
@@ -7,8 +7,8 @@ import {
   validateBulkUpdates,
   validateRecipesData,
   validateNewRecipesArray,
-} from "./validators.js";
-import { RecipeNotFoundError } from "../../utils/errorHandler.js";
+} from "../processing/validators.js";
+import { RecipeNotFoundError } from "../../../utils/errorHandler.js";
 
 /**
  * CRUD operations for recipe data manipulation
@@ -215,7 +215,7 @@ export const isRecipeAlreadyAdded = (recipeList, recipeData) => {
   );
 };
 
-const recipeArrayOperations = {
+const arrayOperations = {
   addRecipeToData,
   updateRecipeInData,
   removeRecipeFromData,
@@ -225,4 +225,4 @@ const recipeArrayOperations = {
   isRecipeAlreadyAdded,
 };
 
-export default recipeArrayOperations;
+export default arrayOperations;

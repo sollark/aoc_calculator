@@ -3,7 +3,7 @@ import {
   findWithFallback,
   createSearchFunction,
 } from "./lookupUtils.js";
-import { sortByName } from "../services/recipe/sorting.js";
+import { sortByName } from "../services/recipe/processing/sorting.js";
 
 /**
  * Configuration for recipe lookup maps

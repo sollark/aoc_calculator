@@ -1,48 +1,39 @@
 /**
- * Recipe service main export
- * Provides a clean API for importing recipe functionality
+ * Recipe Service - Main Export
+ * Organized by functionality for better developer experience
  */
 
-import * as recipeService from "./recipeService.js";
-
-// Main CRUD service functions
-export {
-  getRecipesByType,
-  getAllRecipes,
-  filterRecipes,
-  getRecipeById,
-  addRecipe,
-  updateRecipe,
-  deleteRecipe,
-  getRecipesByComponent,
-  getArtisanSkills,
-  getGatheringSkills,
-  getStatistics,
-  RECIPE_TYPES,
-  VALID_RECIPE_TYPES,
-} from "./recipeService.js";
-
-// Recipe calculation service
-export {
-  createRecipeCalculationService,
-  breakDownToRawComponents,
-  calculateCostBreakdown,
-  optimizeGatheringOrder,
-  calculateRecipeDependencies,
-} from "./recipeCalculationService.js";
-
-// Utility modules for advanced use cases
-export * as filters from "./filters.js";
-export * as transformers from "./transformers.js";
-export * as statistics from "./statistics.js";
-export * as validators from "./validators.js";
-export * as fileOperations from "./fileOperations.js";
-export * as crudOperations from "./crudOperations.js";
-export * as calculations from "./recipeCalculationService.js";
+// Core service
+export { createRecipeServiceFunctions } from "./recipeService.js";
 
 // Constants and types
-// Error classes
-export * from "utils/errorHandler.js";
+export * from "./constants.js";
 
-// Default export for convenience (CRUD service)
-export default recipeService;
+// Core operations (organized by concern)
+export * as queries from "./core/queries.js";
+export * as mutations from "./core/mutations.js";
+export * as calculations from "./core/calculations.js";
+export * as utilities from "./core/utilities.js";
+
+// Data operations
+export * as storage from "./data/storage.js";
+export * as arrayOps from "./data/arrayOperations.js";
+
+// Processing utilities
+export * as filters from "./processing/filters.js";
+export * as transformers from "./processing/transformers.js";
+export * as validators from "./processing/validators.js";
+export * as sorting from "./processing/sorting.js";
+
+// Convenience exports for common operations
+export { getAllRecipes, getRecipeById } from "./core/queries.js";
+
+export { addRecipe, updateRecipe, deleteRecipe } from "./core/mutations.js";
+
+export {
+  processRecipeListToRawComponents,
+  breakDownRecipeToRawComponents,
+} from "./core/calculations.js";
+
+// Default export
+export { createRecipeServiceFunctions as default } from "./recipeService.js";

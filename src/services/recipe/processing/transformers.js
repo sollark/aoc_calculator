@@ -1,4 +1,4 @@
-import { VALID_RECIPE_TYPES } from "./constants.js";
+import { VALID_RECIPE_TYPES } from "../constants.js";
 
 /**
  * Data transformation utilities for recipes

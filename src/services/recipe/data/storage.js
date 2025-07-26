@@ -1,6 +1,6 @@
-import recipesData from "../../db/recipes.json";
-import { RecipeError } from "../../utils/errorHandler.js";
-import { RECIPE_TYPES, SKILL_LEVELS, GATHERING_SKILLS } from "./constants.js";
+import recipesData from "../../../db/recipes.json";
+import { RecipeError } from "../../../utils/errorHandler.js";
+import { RECIPE_TYPES, SKILL_LEVELS, GATHERING_SKILLS } from "../constants.js";
 
 // Use imported data directly
 let recipesCache = recipesData;
@@ -36,46 +36,12 @@ export const writeRecipes = (newRecipesData) => {
     URL.revokeObjectURL(url);
 
     console.log("Recipes file downloaded successfully");
+    return true;
   } catch (error) {
-    console.error("Error writing recipes file:", error);
-    throw new RecipeError(`Failed to write recipes file: ${error.message}`);
+    console.error("Error downloading recipes file:", error);
+    throw new RecipeError(`Failed to download recipes: ${error.message}`);
   }
 };
-
-/**
- * Check if recipes are loaded
- * @returns {boolean} True if recipes are available
- */
-export const recipesFileExists = () => {
-  return recipesCache !== null;
-};
-
-/**
- * Create backup of recipes data
- * @returns {string} Backup file name
- */
-/* export const createBackup = () => {
-  try {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const backupFileName = `recipes-backup-${timestamp}.json`;
-
-    const jsonString = JSON.stringify(recipesCache, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = backupFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    return backupFileName;
-  } catch (error) {
-    throw new RecipeError(`Failed to create backup: ${error.message}`);
-  }
-}; */
 
 /**
  * Initialize recipes data with default structure

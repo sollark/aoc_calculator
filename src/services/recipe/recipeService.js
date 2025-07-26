@@ -1,8 +1,8 @@
-import * as queries from "./recipeQueries.js";
-import * as mutations from "./recipeMutations.js";
-import * as utilities from "./recipeUtilities.js";
-import * as arrayOps from "./recipeArrayOperations.js";
-import { processRecipeListToRawComponents } from "./recipeCalculationService.js";
+import * as queries from "./core/queries.js";
+import * as mutations from "./core/mutations.js";
+import * as calculations from "./core/calculations.js";
+import * as utilities from "./core/utilities.js";
+import * as arrayOps from "./data/arrayOperations.js";
 
 /**
  * Main recipe service - aggregates all recipe operations
@@ -31,44 +31,48 @@ export const {
 } = utilities;
 
 /**
- * Factory function to create recipe service functions
- * @returns {Object} Object containing all recipe service functions
+ * Create recipe service functions
+ * @returns {Object} Recipe service functions
  */
 export const createRecipeServiceFunctions = () => {
+  console.log("Creating recipe service functions...");
+
   return {
-    // CRUD operations (now async)
-    getAllRecipes,
-    getRecipesByType,
-    getRecipeById,
-    addRecipe,
-    updateRecipe,
-    deleteRecipe,
+    // Initialize service
+    initialize: utilities.initializeService,
 
-    // Filtering and searching (now async)
-    filterRecipes,
-    searchRecipes,
-    getRecipesByComponent,
+    // Query operations
+    getAllRecipes: queries.getAllRecipes,
+    getRecipesByType: queries.getRecipesByType,
+    getRecipeById: queries.getRecipeById,
+    filterRecipes: queries.filterRecipes,
+    getRecipesByComponent: queries.getRecipesByComponent,
+    getArtisanSkills: queries.getArtisanSkills,
+    getGatheringSkills: queries.getGatheringSkills,
+    getStatistics: queries.getStatistics,
 
-    // Utility functions (now async)
-    getArtisanSkills,
-    getGatheringSkills,
-    getStatistics,
-    isRecipeAlreadyAdded: arrayOps.isRecipeAlreadyAdded,
+    // Mutation operations
+    addRecipe: mutations.addRecipe,
+    updateRecipe: mutations.updateRecipe,
+    deleteRecipe: mutations.deleteRecipe,
 
-    // Recipe processing functions
-    processRecipeListToRawComponents,
+    // Calculation operations - use correct function names
+    processRecipeListToRawComponents:
+      calculations.processRecipeListToRawComponents,
+    breakDownRecipeToRawComponents: calculations.breakDownRecipeToRawComponents,
+    calculateCostBreakdown: calculations.calculateCostBreakdown,
 
-    // Helper functions (now async)
-    findRecipeByIdentifier,
-    findRawComponentByIdentifier,
+    // Utility operations
+    healthCheck: utilities.healthCheck,
+    getServiceCapabilities: utilities.getServiceCapabilities,
+    clearCache: utilities.clearCache,
+    exportData: utilities.exportData,
 
-    // Initialization (already async)
-    initialize,
+    // Array operations for state management
+    removeRecipeFromList: (recipeList, recipeId) => {
+      return recipeList.filter((item) => item.id !== recipeId);
+    },
   };
 };
 
-const recipeService = {
-  ...createRecipeServiceFunctions(),
-};
-
-export default recipeService;
+export default createRecipeServiceFunctions;

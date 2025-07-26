@@ -1,6 +1,6 @@
-import * as transformers from "./transformers.js";
-import * as fileOps from "./jsonFileOperations.js";
-import * as arrayOps from "./recipeArrayOperations.js";
+import * as transformers from "../processing/transformers.js";
+import * as storage from "../data/storage.js";
+import * as arrayOps from "../data/arrayOperations.js";
 
 /**
  * Recipe mutation operations - create, update, delete functions
@@ -15,10 +15,10 @@ import * as arrayOps from "./recipeArrayOperations.js";
 export const addRecipe = async (type, recipe) => {
   try {
     console.log(`Adding recipe to ${type}:`, recipe);
-    const currentData = await fileOps.readRecipes();
+    const currentData = await storage.readRecipes();
     const updatedData = arrayOps.addRecipeToData(currentData, type, recipe);
 
-    fileOps.writeRecipes(updatedData);
+    storage.writeRecipes(updatedData);
 
     console.log("Recipe added successfully");
     return {
@@ -45,7 +45,7 @@ export const addRecipe = async (type, recipe) => {
 export const updateRecipe = async (id, updates) => {
   try {
     console.log(`Updating recipe ${id} with:`, updates);
-    const currentData = await fileOps.readRecipes();
+    const currentData = await storage.readRecipes();
 
     // Find recipe location first
     const location = transformers.findRecipeLocation(id, currentData);
@@ -65,7 +65,7 @@ export const updateRecipe = async (id, updates) => {
       updates
     );
 
-    fileOps.writeRecipes(result.recipes);
+    storage.writeRecipes(result.recipes);
 
     console.log("Recipe updated successfully");
     return {
@@ -91,7 +91,7 @@ export const updateRecipe = async (id, updates) => {
 export const deleteRecipe = async (id) => {
   try {
     console.log(`Deleting recipe with ID: ${id}`);
-    const currentData = await fileOps.readRecipes();
+    const currentData = await storage.readRecipes();
 
     // Find recipe location first
     const location = transformers.findRecipeLocation(id, currentData);
@@ -110,7 +110,7 @@ export const deleteRecipe = async (id) => {
       location.index
     );
 
-    fileOps.writeRecipes(result.recipes);
+    storage.writeRecipes(result.recipes);
 
     console.log("Recipe deleted successfully");
     return {
