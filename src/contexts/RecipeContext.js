@@ -1,15 +1,40 @@
-import { createContext, useContext } from "react";
-import { useRecipeFiltering } from "../hooks/useRecipeFiltering.js";
+import { createContext, useContext, useState, useEffect } from "react";
 
+// Context for sharing recipe data and services across components
 const RecipeContext = createContext();
 
+// Provider component that makes recipe data available to child components
 export const RecipeProvider = ({ children, recipeService, stateManagers }) => {
-  const {
-    recipes: availableRecipes,
-    isLoading,
-    error,
-  } = useRecipeFiltering(recipeService);
+  const [availableRecipes, setAvailableRecipes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Load all recipes directly from recipeService
+  useEffect(() => {
+    const loadRecipes = async () => {
+      if (!recipeService?.getAllRecipes) {
+        setIsLoading(true);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        const recipes = await recipeService.getAllRecipes();
+        setAvailableRecipes(Array.isArray(recipes) ? recipes : []);
+      } catch (err) {
+        console.error("Error loading recipes:", err);
+        setError(err.message);
+        setAvailableRecipes([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadRecipes();
+  }, [recipeService]);
+
+  // Bundle all recipe-related data and services
   const contextValue = {
     availableRecipes,
     isLoading,
@@ -25,6 +50,7 @@ export const RecipeProvider = ({ children, recipeService, stateManagers }) => {
   );
 };
 
+// Hook to access recipe context data
 export const useRecipeContext = () => {
   const context = useContext(RecipeContext);
   if (!context) {
