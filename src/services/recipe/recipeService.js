@@ -64,8 +64,6 @@ export const createRecipeServiceFunctions = () => {
 
     // Utility operations
     healthCheck: utilities.healthCheck,
-    getServiceCapabilities: utilities.getServiceCapabilities,
-    clearCache: utilities.clearCache,
     exportData: utilities.exportData,
 
     // Array operations for state management

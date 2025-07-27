@@ -71,40 +71,6 @@ export const healthCheck = async () => {
 };
 
 /**
- * Get service capabilities
- * @returns {Object} Available service functions
- */
-export const getServiceCapabilities = () => {
-  return {
-    queries: [
-      "getAllRecipes",
-      "getRecipesByType",
-      "getRecipeById",
-      "filterRecipes",
-      "getRecipesByComponent",
-      "getArtisanSkills",
-      "getGatheringSkills",
-      "getStatistics",
-    ],
-    mutations: ["addRecipe", "updateRecipe", "deleteRecipe"],
-    calculations: [
-      "processRecipeListToRawComponents",
-      "breakDownToRawComponents",
-      "calculateCostBreakdown",
-    ],
-    utilities: ["initializeService", "healthCheck", "getServiceCapabilities"],
-  };
-};
-
-/**
- * Clear recipe cache
- */
-export const clearCache = () => {
-  // Implementation would clear any internal caches
-  console.log("Recipe cache cleared");
-};
-
-/**
  * Export backup of recipe data
  * @returns {Promise<Object>} Backup result
  */

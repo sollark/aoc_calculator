@@ -125,6 +125,7 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   }
 
   // Show error state
+  // TODO: Error component
   if (error) {
     return (
       <div className="recipe-management">

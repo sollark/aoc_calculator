@@ -2,7 +2,6 @@ import { VALID_RECIPE_TYPES, RECIPE_TYPES } from "../constants.js";
 import {
   InvalidRecipeTypeError,
   ValidationError,
-  DuplicateRecipeError,
   RecipeNotFoundError,
 } from "../../../utils/errorHandler.js";
 
@@ -39,19 +38,6 @@ export const validateRecipe = (recipe) => {
   // Validate name is not empty string
   if (typeof recipe.name !== "string" || recipe.name.trim() === "") {
     throw new ValidationError("name", "Name must be a non-empty string");
-  }
-};
-
-/**
- * Check if recipe ID already exists
- * @param {number} id - Recipe ID to check
- * @param {Array} allRecipes - Array of all recipes
- * @throws {DuplicateRecipeError} If ID already exists
- */
-export const validateUniqueId = (id, allRecipes) => {
-  const existing = allRecipes.find((recipe) => recipe.id === id);
-  if (existing) {
-    throw new DuplicateRecipeError(id);
   }
 };
 
