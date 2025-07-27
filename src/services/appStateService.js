@@ -1,10 +1,37 @@
 import { consolidateComponentsById } from "../utils/recipeUtils.js";
 
 /**
+ * Pure function to remove a recipe from a list by ID
+ * @param {Array} recipeList - Current recipe list
+ * @param {string|number} recipeId - ID of recipe to remove
+ * @returns {Array} New list without the specified recipe
+ */
+const removeRecipeFromList = (recipeList, recipeId) => {
+  console.log("🔍 removeRecipeFromList called with:", { recipeList, recipeId });
+  console.log("🔍 recipeList length:", recipeList.length);
+  console.log("🔍 recipeId type:", typeof recipeId);
+
+  if (!Array.isArray(recipeList)) {
+    console.error("❌ recipeList is not an array:", recipeList);
+    return [];
+  }
+
+  const filteredList = recipeList.filter((item) => {
+    const matches = item.id === recipeId;
+    console.log(
+      `🔍 Checking item ${item.id} (${item.recipe?.name}) === ${recipeId}: ${matches}`
+    );
+    return !matches;
+  });
+
+  console.log("🔍 Filtered list length:", filteredList.length);
+  console.log("🔍 Returning filtered list:", filteredList);
+
+  return filteredList;
+};
+
+/**
  * Pure function to initialize default recipe selection
- * @param {Array} allRecipes - All available recipes
- * @param {string} currentSelection - Current selected recipe
- * @returns {string} Recipe name to select
  */
 export const initializeDefaultRecipe = (allRecipes, currentSelection) => {
   if (allRecipes.length > 0 && !currentSelection) {
@@ -15,34 +42,16 @@ export const initializeDefaultRecipe = (allRecipes, currentSelection) => {
 
 /**
  * Higher-order function that creates a recipe addition handler
- * @param {Function} setRecipeList - State setter function
- * @returns {Function} Function that handles recipe addition results
  */
 export const createRecipeAdditionHandler = (setRecipeList) => (result) => {
   if (result.success) {
     setRecipeList((prev) => [...prev, result.data]);
   }
-  // Could add toast notifications here based on result.message
   return result;
 };
 
 /**
- * Higher-order function that creates a recipe removal handler
- * @param {Function} removeFunction - Function to remove recipe
- * @param {Function} setRecipeList - State setter function
- * @returns {Function} Function that handles recipe removal
- */
-export const createRecipeRemovalHandler =
-  (removeFunction, setRecipeList) => (recipeId) => {
-    const updatedList = removeFunction(recipeId);
-    setRecipeList(updatedList);
-    return updatedList;
-  };
-
-/**
  * Create state management functions
- * @param {Object} recipeServiceFunctions - Recipe service functions
- * @returns {Object} Composed state management functions
  */
 export const createStateManagers = (
   recipeServiceFunctions,
@@ -54,11 +63,8 @@ export const createStateManagers = (
     return null;
   }
 
-  const {
-    removeRecipeFromList = () => [],
-    processRecipeListToRawComponents = () => [],
-    // addRecipe is not used, so it's removed to avoid the warning
-  } = recipeServiceFunctions;
+  const { processRecipeListToRawComponents = () => [] } =
+    recipeServiceFunctions;
 
   // Recipe list management
   const createRecipeListManager = (setRecipeList, getRecipeList) => {
@@ -72,7 +78,6 @@ export const createStateManagers = (
             recipeData ? Object.keys(recipeData) : "no keys"
           );
 
-          // Check if setRecipeList is a function
           if (typeof setRecipeList !== "function") {
             console.error(
               "❌ setRecipeList is not a function:",
@@ -85,7 +90,6 @@ export const createStateManagers = (
             };
           }
 
-          // Use setState callback to get current state and update it
           setRecipeList((currentList) => {
             console.log("🔍 setState callback - currentList:", currentList);
             console.log(
@@ -97,17 +101,14 @@ export const createStateManagers = (
               ? currentList
               : [];
 
-            // Handle both string and object recipes
             let recipeToAdd = recipeData;
             let recipeId;
 
             if (typeof recipeData === "string") {
-              // If it's a string, we need to find the full recipe object
               console.warn(
                 "⚠️ Recipe passed as string, this should be fixed in RecipeSelector"
               );
-              recipeId = recipeData; // Use string as ID for comparison
-              // For now, create a minimal object
+              recipeId = recipeData;
               recipeToAdd = { name: recipeData, id: recipeData };
             } else if (recipeData && typeof recipeData === "object") {
               recipeId = recipeData.id || recipeData.name;
@@ -133,10 +134,9 @@ export const createStateManagers = (
               return currentList;
             }
 
-            // Create new recipe list item
             const newItem = {
               id: Date.now(),
-              recipe: recipeToAdd, // Store the full object or temporary object
+              recipe: recipeToAdd,
               quantity: 1,
             };
 
@@ -152,7 +152,7 @@ export const createStateManagers = (
           return {
             success: true,
             message: "Recipe added to list",
-            newList: [], // We can't return the actual new list here, but that's ok
+            newList: [],
           };
         } catch (error) {
           console.error("Error adding recipe:", error);
@@ -164,10 +164,20 @@ export const createStateManagers = (
         }
       },
 
+      // FIXED: Proper remove recipe function that uses the current state
       removeRecipe: (recipeId) => {
+        console.log("🔍 removeRecipe called with ID:", recipeId);
+
         try {
           const currentList = getRecipeList ? getRecipeList() : [];
-          return removeRecipeFromList(currentList, recipeId);
+          console.log("🔍 Current list from getRecipeList:", currentList);
+          console.log("🔍 Current list length:", currentList.length);
+
+          const filteredList = removeRecipeFromList(currentList, recipeId);
+          console.log("🔍 Filtered list:", filteredList);
+          console.log("🔍 Filtered list length:", filteredList.length);
+
+          return filteredList;
         } catch (error) {
           console.error("Error removing recipe:", error);
           return [];
@@ -244,16 +254,11 @@ export const createStateManagers = (
     };
   };
 
-  // Return all managers
   return {
-    recipeList: createRecipeListManager(
-      setRecipeList,
-      getRecipeList // Pass getRecipeList directly
-    ),
+    recipeList: createRecipeListManager(setRecipeList, getRecipeList),
     rawComponents: createRawComponentsManager(),
     appState: createAppStateManager(),
 
-    // Utility functions
     utils: {
       isServiceReady: () => Boolean(recipeServiceFunctions),
       getAvailableFunctions: () => Object.keys(recipeServiceFunctions || {}),
@@ -261,5 +266,4 @@ export const createStateManagers = (
   };
 };
 
-// Default export
 export default createStateManagers;

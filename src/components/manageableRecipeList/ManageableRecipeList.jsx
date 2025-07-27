@@ -15,18 +15,52 @@ const ManageableRecipeList = ({ recipes, onRemoveRecipe, onClearList }) => {
     </button>
   );
 
-  const renderRecipeItem = (recipe) => (
-    <>
-      <button
-        onClick={() => onRemoveRecipe(recipe.id)}
-        className="manageable-recipe-list__remove-btn"
-        aria-label={`Remove ${recipe.name} recipe`}
-      >
-        ×
-      </button>
-      <Recipe recipeData={recipe} />
-    </>
-  );
+  const renderRecipeItem = (recipe) => {
+    console.log("🔍 ManageableRecipeList - renderRecipeItem recipe:", recipe);
+    console.log(
+      "🔍 ManageableRecipeList - recipe.id (list item ID):",
+      recipe.id
+    );
+    console.log("🔍 ManageableRecipeList - recipe structure:", {
+      id: recipe.id,
+      name: recipe.name,
+      hasRecipeData: !!recipe.recipe,
+      originalRecipeId: recipe.recipe?.id,
+      idType: typeof recipe.id,
+      idValue: recipe.id,
+    });
+
+    return (
+      <>
+        <button
+          onClick={() => {
+            console.log("🗑️ Remove button clicked for recipe:", recipe.name);
+            console.log("🗑️ Recipe ID being passed:", recipe.id);
+            console.log("🗑️ Recipe ID type:", typeof recipe.id);
+            console.log("🗑️ Recipe ID value:", recipe.id);
+            console.log("🗑️ Full recipe object:", recipe);
+            console.log("🗑️ About to call onRemoveRecipe with ID:", recipe.id);
+
+            // Add a confirmation check to make sure we're not accidentally calling clear
+            if (typeof onRemoveRecipe === "function") {
+              console.log("🗑️ onRemoveRecipe is a function, calling it now");
+              onRemoveRecipe(recipe.id);
+            } else {
+              console.error(
+                "🗑️ onRemoveRecipe is not a function!",
+                typeof onRemoveRecipe
+              );
+            }
+          }}
+          className="manageable-recipe-list__remove-btn"
+          aria-label={`Remove ${recipe.name} recipe`}
+        >
+          ×
+        </button>
+        <Recipe recipeData={recipe} />
+      </>
+    );
+  };
 
   return (
     <BaseRecipeList

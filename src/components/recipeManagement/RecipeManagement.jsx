@@ -165,12 +165,21 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     }
 
     // Handle correct case where recipe is an object
-    return {
-      id: item.id,
+    const transformed = {
+      ...item.recipe, // Spread the recipe data first
+      id: item.id, // Then override with the list item ID (this must come after the spread)
       name: item.recipe?.name || "Unknown Recipe",
-      ...item.recipe, // Spread the recipe data
       quantity: item.quantity || 1,
     };
+
+    console.log("🔍 Transformed result:", {
+      listItemId: item.id,
+      originalRecipeId: item.recipe?.id,
+      finalId: transformed.id,
+      name: transformed.name,
+    });
+
+    return transformed;
   });
 
   return (

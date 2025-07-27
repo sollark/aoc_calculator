@@ -2,33 +2,6 @@ import * as queries from "./core/queries.js";
 import * as mutations from "./core/mutations.js";
 import * as calculations from "./core/calculations.js";
 import * as utilities from "./core/utilities.js";
-import * as arrayOps from "./data/storageOperations.js";
-
-/**
- * Main recipe service - aggregates all recipe operations
- * This is the main entry point for recipe functionality
- */
-
-// Re-export all functions with organized grouping
-export const {
-  getAllRecipes,
-  getRecipesByType,
-  getRecipeById,
-  getRecipesByComponent,
-  filterRecipes,
-  searchRecipes,
-} = queries;
-
-export const { addRecipe, updateRecipe, deleteRecipe } = mutations;
-
-export const {
-  getArtisanSkills,
-  getGatheringSkills,
-  getStatistics,
-  findRecipeByIdentifier,
-  findRawComponentByIdentifier,
-  initialize,
-} = utilities;
 
 /**
  * Create recipe service functions
@@ -66,7 +39,7 @@ export const createRecipeServiceFunctions = () => {
     updateRecipe: mutations.updateRecipe,
     deleteRecipe: mutations.deleteRecipe,
 
-    // Calculation operations - updated to use correct function names
+    // Calculation operations
     processRecipeListToRawComponents:
       calculations.processRecipeListToRawComponents,
     breakDownToRawComponents: calculations.breakDownToRawComponents,
@@ -75,11 +48,6 @@ export const createRecipeServiceFunctions = () => {
     // Utility operations
     healthCheck: utilities.healthCheck,
     exportData: utilities.exportData,
-
-    // Array operations for state management
-    removeRecipeFromList: (recipeList, recipeId) => {
-      return recipeList.filter((item) => item.id !== recipeId);
-    },
   };
 };
 

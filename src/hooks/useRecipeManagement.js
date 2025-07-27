@@ -2,21 +2,13 @@ import { useCallback } from "react";
 
 /**
  * Custom hook for managing recipe operations
- * Provides memoized handlers for recipe management operations
- *
- * @param {Object} stateManagers - State management functions
- * @param {Object} recipeServiceFunctions - Recipe service functions
- * @param {Function} setSelectedRecipe - Function to set selected recipe
- * @returns {Object} Recipe management handlers
+ * SIMPLIFIED: Removed duplicate remove logic, focusing on high-level operations
  */
 export const useRecipeManagement = (
   stateManagers,
   recipeServiceFunctions,
   setSelectedRecipe
 ) => {
-  /**
-   * Handle recipe addition with service validation
-   */
   const handleAddRecipe = useCallback(
     (recipeList, selectedRecipe) => {
       const result = recipeServiceFunctions.addRecipeToList(
@@ -28,26 +20,18 @@ export const useRecipeManagement = (
     [recipeServiceFunctions, stateManagers]
   );
 
-  /**
-   * Handle recipe removal
-   */
+  // SIMPLIFIED: Just delegate to state managers
   const handleRemoveRecipe = useCallback(
     (recipeId) => {
-      return stateManagers.handleRecipeRemoval(recipeId);
+      return stateManagers.recipeList.removeRecipe(recipeId);
     },
     [stateManagers]
   );
 
-  /**
-   * Handle clearing recipe list
-   */
   const handleClearList = useCallback(() => {
-    return stateManagers.clearRecipeList();
+    return stateManagers.recipeList.clearList();
   }, [stateManagers]);
 
-  /**
-   * Handle recipe selection change
-   */
   const handleRecipeChange = useCallback(
     (recipeName) => {
       setSelectedRecipe(recipeName);

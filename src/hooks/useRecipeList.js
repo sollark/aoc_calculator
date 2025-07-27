@@ -19,12 +19,11 @@ export const useRecipeList = (recipeServiceFunctions) => {
 
     return createStateManagers(
       recipeServiceFunctions,
-      setRecipeList, // ← Now this is the actual function
-      () => recipeList // ← Now this returns current state
+      setRecipeList,
+      () => recipeList
     );
   }, [recipeServiceFunctions, recipeList]);
 
-  // Make sure the state updates properly after adding a recipe
   const handleAddRecipe = useCallback(
     async (recipe) => {
       console.log("🔍 handleAddRecipe called with:", recipe);
@@ -39,10 +38,6 @@ export const useRecipeList = (recipeServiceFunctions) => {
       try {
         const result = await stateManagers.recipeList.addRecipe(recipe);
         console.log("🔍 addRecipe result:", result);
-
-        // The setState callback in appStateService.js will handle the state update
-        // No need to manually update here since we're using the callback approach
-
         return result;
       } catch (error) {
         console.error("❌ Error in handleAddRecipe:", error);
@@ -52,15 +47,28 @@ export const useRecipeList = (recipeServiceFunctions) => {
     [stateManagers]
   );
 
+  // SIMPLIFIED: Remove recipe handler - just calls the state manager and updates state
   const handleRemoveRecipe = useCallback(
     (recipeId) => {
-      if (!stateManagers?.recipeList) return;
+      console.log("🗑️ handleRemoveRecipe called with ID:", recipeId);
+      console.log("🗑️ Current recipeList:", recipeList);
+      console.log("🗑️ Current recipeList length:", recipeList.length);
 
-      const updatedList = stateManagers.recipeList.removeRecipe(
-        recipeList,
-        recipeId
-      );
-      setRecipeList(updatedList);
+      if (!stateManagers?.recipeList?.removeRecipe) {
+        console.error("🗑️ No removeRecipe function available in stateManagers");
+        return;
+      }
+
+      try {
+        const updatedList = stateManagers.recipeList.removeRecipe(recipeId);
+        console.log("🗑️ removeRecipe returned:", updatedList);
+        console.log("🗑️ updatedList type:", typeof updatedList);
+        console.log("🗑️ updatedList length:", updatedList?.length);
+
+        setRecipeList(updatedList);
+      } catch (error) {
+        console.error("🗑️ Error in handleRemoveRecipe:", error);
+      }
     },
     [stateManagers, recipeList]
   );
