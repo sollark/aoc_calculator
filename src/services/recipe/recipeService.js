@@ -37,6 +37,16 @@ export const {
 export const createRecipeServiceFunctions = () => {
   console.log("Creating recipe service functions...");
 
+  // Initialize calculation service with recipe service instance
+  const recipeServiceInstance = {
+    getAllRecipes: queries.getAllRecipes,
+    getRecipesByType: queries.getRecipesByType,
+    getRecipeById: queries.getRecipeById,
+  };
+
+  // Initialize the calculation service
+  calculations.initializeCalculationService(recipeServiceInstance);
+
   return {
     // Initialize service
     initialize: utilities.initializeService,
@@ -56,10 +66,11 @@ export const createRecipeServiceFunctions = () => {
     updateRecipe: mutations.updateRecipe,
     deleteRecipe: mutations.deleteRecipe,
 
-    // Calculation operations - use correct function names
+    // Calculation operations - updated to use correct function names
     processRecipeListToRawComponents:
       calculations.processRecipeListToRawComponents,
-    breakDownRecipeToRawComponents: calculations.breakDownRecipeToRawComponents,
+    breakDownToRawComponents: calculations.breakDownToRawComponents,
+    convertRecipeToRawComponents: calculations.convertRecipeToRawComponents,
 
     // Utility operations
     healthCheck: utilities.healthCheck,
