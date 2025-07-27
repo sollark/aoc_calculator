@@ -1,9 +1,4 @@
-import {
-  createRecipeLookups,
-  createRawComponentLookups,
-  findRecipe,
-  findRawComponent,
-} from "../../../utils/recipeUtils.js";
+import { findRecipe, findRawComponent } from "../../../utils/recipeUtils.js";
 
 /**
  * Recipe calculation and breakdown service
@@ -94,20 +89,13 @@ export const processRecipeListToRawComponents = (recipeList) => {
   // Extract recipes from the recipe list structure
   const recipes = recipeList
     .map((item) => {
-      console.log("🔍 Processing recipe list item:", item);
-      console.log("🔍 Item.recipe:", item?.recipe);
-
-      // The item structure is: {id, recipe, quantity}
-      // The recipe might have nested structure: recipe.recipe.components
       const recipeData = item?.recipe;
       if (recipeData && recipeData.recipe) {
-        // If recipe has nested recipe data, use that
         return {
           ...recipeData,
           quantity: item.quantity || 1,
         };
       } else if (recipeData) {
-        // If recipe data is flat, use it directly
         return {
           ...recipeData,
           quantity: item.quantity || 1,
@@ -117,29 +105,24 @@ export const processRecipeListToRawComponents = (recipeList) => {
     })
     .filter(Boolean);
 
-  console.log("🔍 Extracted recipes for processing:", recipes);
-
   if (recipes.length === 0) {
-    console.log("🔍 No valid recipes to process");
     return [];
   }
 
-  // Process each recipe to get its raw components
+  // Use recursive breakdown for each recipe
   const allComponents = [];
   recipes.forEach((recipe) => {
-    const components = breakDownRecipeToRawComponents(
-      recipe,
-      recipe.quantity || 1
+    // Use the recursive function instead of the simple one
+    const components = breakDownToRawComponents(
+      recipe.name,
+      recipe.quantity || 1,
+      new Set()
     );
     allComponents.push(...components);
   });
 
-  console.log("🔍 All components before consolidation:", allComponents);
-
   // Consolidate components by ID
   const consolidated = consolidateComponentsById(allComponents);
-  console.log("🔍 Final consolidated components:", consolidated);
-
   return consolidated;
 };
 
@@ -212,28 +195,6 @@ const consolidateComponentsById = (components) => {
 };
 
 /**
- * Calculate cost breakdown for a recipe
- * @param {Object} recipe - Recipe to calculate costs for
- * @param {number} quantity - Quantity to make
- * @returns {Object} Cost breakdown
- */
-export const calculateCostBreakdown = (recipe, quantity = 1) => {
-  const rawComponents = breakDownRecipeToRawComponents(recipe, quantity);
-
-  return {
-    recipe: recipe.name,
-    quantity,
-    rawComponents,
-    totalComponents: rawComponents.length,
-    estimatedTime: recipe.recipe?.craftingTime
-      ? recipe.recipe.craftingTime * quantity
-      : null,
-    artisanSkill: recipe.recipe?.artisanSkill,
-    workStation: recipe.recipe?.workStation,
-  };
-};
-
-/**
  * Create recipe calculation service
  * @returns {Object} Calculation service functions
  */
@@ -241,6 +202,5 @@ export const createRecipeCalculationService = () => {
   return {
     processRecipeListToRawComponents,
     breakDownRecipeToRawComponents,
-    calculateCostBreakdown,
   };
 };

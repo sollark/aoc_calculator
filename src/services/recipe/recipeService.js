@@ -60,7 +60,6 @@ export const createRecipeServiceFunctions = () => {
     processRecipeListToRawComponents:
       calculations.processRecipeListToRawComponents,
     breakDownRecipeToRawComponents: calculations.breakDownRecipeToRawComponents,
-    calculateCostBreakdown: calculations.calculateCostBreakdown,
 
     // Utility operations
     healthCheck: utilities.healthCheck,
