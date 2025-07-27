@@ -48,6 +48,7 @@ const createMultipleLookups = (items, configs) => {
 };
 
 /**
+ * Helper function
  * Pure function to search items by keyword in specified fields
  * @param {Array} items - Array of objects to search
  * @param {string} keyword - Search keyword
@@ -91,32 +92,6 @@ const createSearchFunction = (searchFields, caseSensitive = false) => {
 };
 
 /**
- * Pure function to filter items by multiple criteria
- * @param {Array} items - Array of objects to filter
- * @param {Object} criteria - Object with field-value pairs to match
- * @returns {Array} Filtered array of matching items
- */
-const filterByCriteria = (items, criteria) => {
-  if (!Array.isArray(items) || !criteria) {
-    return items;
-  }
-
-  return items.filter((item) =>
-    Object.entries(criteria).every(([field, value]) => item[field] === value)
-  );
-};
-
-/**
- * Compose multiple filter functions
- * @param {...Function} filterFunctions - Functions that take an array and return filtered array
- * @returns {Function} Composed filter function
- */
-const composeFilters = (...filterFunctions) => {
-  return (items) =>
-    filterFunctions.reduce((result, filterFn) => filterFn(result), items);
-};
-
-/**
  * Pure function to find item by lookup with fallback search
  * @param {Object} lookup - Lookup map
  * @param {Array} items - Original items array for fallback search
@@ -142,9 +117,6 @@ const findWithFallback = (lookup, items, key, fallbackField = null) => {
 export {
   createLookupMap,
   createMultipleLookups,
-  searchByKeyword,
   createSearchFunction,
-  filterByCriteria,
-  composeFilters,
   findWithFallback,
 };
