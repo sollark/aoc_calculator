@@ -1,6 +1,6 @@
 import * as transformers from "../processing/transformers.js";
 import * as storage from "../data/storage.js";
-import * as arrayOps from "../data/arrayOperations.js";
+import * as arrayOps from "../data/storageOperations.js";
 
 /**
  * Recipe mutation operations - create, update, delete functions

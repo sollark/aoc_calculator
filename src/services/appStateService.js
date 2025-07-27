@@ -14,24 +14,6 @@ export const initializeDefaultRecipe = (allRecipes, currentSelection) => {
 };
 
 /**
- * Pure function to log application initialization data
- * @param {Array} allRecipes - All loaded recipes
- * @param {Object} recipeLookups - Recipe lookup maps
- * @param {Object} rawComponentLookups - Raw component lookup maps
- */
-export const logInitializationData = (
-  allRecipes,
-  recipeLookups,
-  rawComponentLookups
-) => {
-  if (process.env.NODE_ENV === "development") {
-    console.log("All Recipes Loaded:", allRecipes);
-    console.log("Recipe Lookups:", recipeLookups);
-    console.log("Raw Component Lookups:", rawComponentLookups);
-  }
-};
-
-/**
  * Higher-order function that creates a recipe addition handler
  * @param {Function} setRecipeList - State setter function
  * @returns {Function} Function that handles recipe addition results
@@ -75,10 +57,7 @@ export const createStateManagers = (
   const {
     removeRecipeFromList = () => [],
     processRecipeListToRawComponents = () => [],
-    addRecipe = () => ({
-      success: false,
-      message: "Function not available",
-    }),
+    // addRecipe is not used, so it's removed to avoid the warning
   } = recipeServiceFunctions;
 
   // Recipe list management

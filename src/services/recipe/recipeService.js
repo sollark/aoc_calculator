@@ -2,7 +2,7 @@ import * as queries from "./core/queries.js";
 import * as mutations from "./core/mutations.js";
 import * as calculations from "./core/calculations.js";
 import * as utilities from "./core/utilities.js";
-import * as arrayOps from "./data/arrayOperations.js";
+import * as arrayOps from "./data/storageOperations.js";
 
 /**
  * Main recipe service - aggregates all recipe operations
