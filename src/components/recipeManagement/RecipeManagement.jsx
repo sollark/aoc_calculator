@@ -6,7 +6,7 @@ import { useRecipeSelection } from "../../hooks/useRecipeSelection.js";
 import { useRecipeStats } from "../../hooks/useRecipeStats.js";
 import { useRecipeValidation } from "../../hooks/useRecipeValidation.js";
 import RecipeSelector from "../recipeSelector/RecipeSelector.jsx";
-import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList.jsx"; // Use your existing component
+import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList.jsx";
 import "./recipeManagement.css";
 
 const RecipeManagement = ({ onRecipeListChange }) => {
@@ -14,21 +14,32 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   const { availableRecipes, isLoading, error, stateManagers } =
     useRecipeContext();
 
-  // Use availableRecipes from context
-  const allRecipes = React.useMemo(
-    () => availableRecipes || [],
-    [availableRecipes]
-  );
+  // Filter to only include intermediate recipes and crafted items (no raw components)
+  const craftableRecipes = React.useMemo(() => {
+    if (!availableRecipes) return [];
 
-  // Initialize hooks with correct data
-  const { selectedRecipe, handleRecipeChange } = useRecipeSelection(allRecipes);
+    return availableRecipes.filter((recipe) => {
+      // Only include recipes that have a 'recipe' property (indicating they can be crafted)
+      // This excludes raw_components which only have gathering information
+      return (
+        recipe.recipe &&
+        (recipe.recipe.artisanSkill ||
+          recipe.recipe.workStation ||
+          recipe.recipe.components)
+      );
+    });
+  }, [availableRecipes]);
+
+  // Initialize hooks with filtered craftable recipes
+  const { selectedRecipe, handleRecipeChange } =
+    useRecipeSelection(craftableRecipes);
   const { recipeList, handleAddRecipe, handleRemoveRecipe, handleClearList } =
     useRecipeList(stateManagers);
-  const stats = useRecipeStats(allRecipes, recipeList);
+  const stats = useRecipeStats(craftableRecipes, recipeList);
   const validation = useRecipeValidation(
     selectedRecipe,
     recipeList,
-    allRecipes
+    craftableRecipes
   );
 
   // Handle add recipe button click
@@ -38,7 +49,7 @@ const RecipeManagement = ({ onRecipeListChange }) => {
       console.log("🔧 Add recipe button clicked!");
       console.log("📋 Selected recipe:", selectedRecipe?.name);
       console.log("✅ Can add selected:", validation.canAddSelected);
-      console.log("📚 All recipes count:", allRecipes?.length);
+      console.log("📚 Craftable recipes count:", craftableRecipes?.length);
       console.log("🏗️ Current recipe list:", recipeList);
       console.log("🔍 Validation details:", validation);
 
@@ -94,7 +105,7 @@ const RecipeManagement = ({ onRecipeListChange }) => {
         console.error("❌ Error adding recipe:", error);
       }
     },
-    [selectedRecipe, validation, handleAddRecipe, allRecipes, recipeList]
+    [selectedRecipe, validation, handleAddRecipe, craftableRecipes, recipeList]
   );
 
   // Update parent when recipe list changes
@@ -108,12 +119,16 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   // Debug logging
   useEffect(() => {
     console.log(
-      "📋 RecipeManagement - availableRecipes from context:",
+      "📋 RecipeManagement - total availableRecipes from context:",
       availableRecipes?.length || 0
+    );
+    console.log(
+      "📋 RecipeManagement - filtered craftableRecipes:",
+      craftableRecipes?.length || 0
     );
     console.log("📋 RecipeManagement - isLoading:", isLoading);
     console.log("📋 RecipeManagement - error:", error);
-  }, [availableRecipes, isLoading, error]);
+  }, [availableRecipes, craftableRecipes, isLoading, error]);
 
   // Show loading state
   if (isLoading) {
@@ -125,7 +140,6 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   }
 
   // Show error state
-  // TODO: Error component
   if (error) {
     return (
       <div className="recipe-management">
@@ -163,7 +177,7 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     <div className="recipe-management">
       <div className="recipe-management__selector">
         <RecipeSelector
-          recipes={allRecipes}
+          recipes={craftableRecipes}
           selectedRecipe={selectedRecipe}
           onRecipeChange={handleRecipeChange}
           onAddRecipe={handleAddClick}
@@ -190,7 +204,7 @@ const RecipeSelectionStats = ({ stats, validation }) => (
   <div className="recipe-management__stats">
     <div className="recipe-management__stat-group">
       <span className="recipe-management__stat">
-        Total Available: {stats?.totalRecipes || 0}
+        Craftable Recipes: {stats?.totalRecipes || 0}
       </span>
       <span className="recipe-management__stat">
         Selected: {stats?.selectedCount || 0}
