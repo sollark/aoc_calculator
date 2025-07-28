@@ -65,7 +65,7 @@ const ManageableRecipeList = ({ recipes, onRemoveRecipe, onClearList }) => {
           className="manageable-recipe-list__remove-btn"
           aria-label={`Remove ${recipe.name} recipe`}
         />
-        <Recipe recipeData={recipe} />
+        <Recipe recipe={recipe} />
       </>
     );
   };

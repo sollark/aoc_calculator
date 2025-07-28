@@ -4,42 +4,55 @@ import CraftComponent from "../craftComponent/CraftComponent";
 import { recipePropType } from "../../types/recipePropTypes";
 
 const RecipeCard = ({
-  recipeData,
-  recipe,
+  recipe, // ✅ SINGLE source of truth
   playerLevel = 1,
   playerArtisanLevel = "novice",
   showRequirements = true,
 }) => {
-  console.log(`Recipe component initialized with data:`, recipeData);
-  console.log(`🔍 RecipeCard props recipe:`, recipe);
-  console.log(`🔍 RecipeCard recipeData:`, recipeData);
+  console.log(`✅ RecipeCard initialized with recipe:`, recipe);
 
   const [quantity, setQuantity] = useState(0);
   const [playerHasQuantity, setPlayerHasQuantity] = useState(0);
 
-  // The issue is here - fix the data extraction
-  if (!recipeData) {
-    console.warn("No recipe data available");
+  // Early return if no recipe data
+  if (!recipe) {
+    console.warn("No recipe data provided");
     return null;
   }
 
-  // Extract the main recipe info and nested recipe details
+  // Extract recipe data - handle both flat and nested structures
   const {
     name,
     icon,
     description,
     requirements = { playerLevel: 0, artisanLevel: "novice" },
-    recipe: recipeDetails = {},
-  } = recipeData;
+    // Handle nested recipe structure if it exists
+    recipe: nestedRecipe,
+    // Handle flat structure
+    workStation,
+    artisanSkill,
+    components = [],
+  } = recipe;
 
-  const { workStation, artisanSkill, components = [] } = recipeDetails;
-
-  console.log(`🔍 Extracted data:`, {
-    name,
-    description,
+  // Use nested recipe data if available, otherwise use flat structure
+  const recipeDetails = nestedRecipe || {
     workStation,
     artisanSkill,
     components,
+  };
+
+  const {
+    workStation: finalWorkStation,
+    artisanSkill: finalArtisanSkill,
+    components: finalComponents = [],
+  } = recipeDetails;
+
+  console.log(`🔍 Processed recipe data:`, {
+    name,
+    description,
+    workStation: finalWorkStation,
+    artisanSkill: finalArtisanSkill,
+    components: finalComponents,
   });
 
   return (
@@ -64,27 +77,28 @@ const RecipeCard = ({
 
       <div className="recipe__details">
         <div className="recipe__workstation">
-          <strong>Work Station:</strong> {workStation || "Unknown"}
+          <strong>Work Station:</strong> {finalWorkStation || "Unknown"}
         </div>
         <div className="recipe__skill">
-          <strong>Artisan Skill:</strong> {artisanSkill || "Unknown"}
+          <strong>Artisan Skill:</strong> {finalArtisanSkill || "Unknown"}
         </div>
       </div>
 
       <div className="recipe__components">
         <strong>Components:</strong>
         <ul className="recipe__components-list">
-          {components.length > 0 ? (
-            components.map((component, index) => (
+          {finalComponents.length > 0 ? (
+            finalComponents.map((component, index) => (
               <li
                 key={component.id || index}
                 className="recipe__component-item"
               >
                 <CraftComponent
+                  id={component.id || index}
                   name={component.name}
                   quantity={component.quantity}
-                  onQuantityChange={(name, value) => {
-                    console.log(`Updated ${name} quantity to ${value}`);
+                  onQuantityChange={(id, name, value) => {
+                    console.log(`Updated ${name} (${id}) quantity to ${value}`);
                   }}
                 />
               </li>
@@ -100,8 +114,7 @@ const RecipeCard = ({
 
 // PropTypes validation
 RecipeCard.propTypes = {
-  recipeData: recipePropType,
-  recipe: recipePropType, // Add this for nested structure
+  recipe: recipePropType.isRequired, // ✅ SINGLE prop for recipe data
   playerLevel: PropTypes.number,
   playerArtisanLevel: PropTypes.oneOf([
     "novice",
