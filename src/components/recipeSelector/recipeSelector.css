@@ -1,59 +1,106 @@
 .recipe-selector {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-selector__controls {
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
+  gap: 12px;
+  align-items: stretch;
 }
 
 .recipe-selector__dropdown {
   flex: 1;
   min-width: 200px;
-  padding: 0.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: white;
-}
-
-.recipe-selector__dropdown:focus {
-  outline: none;
-  border-color: #0066cc;
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
 }
 
 .recipe-selector__add-btn {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-}
-
-.recipe-selector__add-btn:hover:not(:disabled) {
-  background-color: #218838;
-}
-
-.recipe-selector__add-btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
+  flex-shrink: 0;
+  min-width: 140px;
 }
 
 .recipe-selector__status {
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-  font-size: 0.9rem;
-  color: #6c757d;
-  font-style: italic;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.recipe-selector__status--info {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.recipe-selector__status--success {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.recipe-selector__status--loading {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.recipe-selector__status--empty {
+  background-color: #f9fafb;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.recipe-selector--loading {
+  opacity: 0.7;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .recipe-selector__controls {
+    flex-direction: column;
+  }
+
+  .recipe-selector__add-btn {
+    min-width: unset;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .recipe-selector {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+
+  .recipe-selector__status--info {
+    background-color: #1e3a8a;
+    color: #bfdbfe;
+    border-color: #3730a3;
+  }
+
+  .recipe-selector__status--success {
+    background-color: #064e3b;
+    color: #bbf7d0;
+    border-color: #065f46;
+  }
+
+  .recipe-selector__status--loading {
+    background-color: #78350f;
+    color: #fde68a;
+    border-color: #92400e;
+  }
+
+  .recipe-selector__status--empty {
+    background-color: #111827;
+    color: #9ca3af;
+    border-color: #374151;
+  }
 }

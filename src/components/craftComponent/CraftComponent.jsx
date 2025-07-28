@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { QuantityControl } from "../ui";
 import "./craftComponent.css";
 
 const CraftComponent = ({
@@ -34,29 +35,15 @@ const CraftComponent = ({
 
       {!readOnly && onQuantityChange && (
         <div className="craft-component__controls">
-          <button
-            onClick={() =>
-              handleQuantityChange(Math.max(0, currentQuantity - 1))
-            }
-            className="craft-component__btn craft-component__btn--decrease"
-          >
-            -
-          </button>
-          <input
-            type="number"
+          <QuantityControl
             value={currentQuantity}
-            onChange={(e) =>
-              handleQuantityChange(parseInt(e.target.value) || 0)
-            }
-            className="craft-component__input"
-            min="0"
+            onChange={handleQuantityChange}
+            min={0}
+            size="small"
+            disabled={readOnly}
+            aria-label={`Quantity of ${name}`}
+            className="craft-component__quantity-control"
           />
-          <button
-            onClick={() => handleQuantityChange(currentQuantity + 1)}
-            className="craft-component__btn craft-component__btn--increase"
-          >
-            +
-          </button>
         </div>
       )}
     </div>

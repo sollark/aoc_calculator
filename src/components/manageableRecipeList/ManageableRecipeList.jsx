@@ -2,17 +2,22 @@ import React from "react";
 import PropTypes from "prop-types";
 import Recipe from "../recipeCard/RecipeCard";
 import BaseRecipeList from "../baseRecipeList/BaseRecipeList";
+import { Button, IconButton } from "../ui";
 import "./manageableRecipeList.css";
 
 const ManageableRecipeList = ({ recipes, onRemoveRecipe, onClearList }) => {
+  // ✅ FIXED: Clear All button now uses danger variant to match remove button
   const headerActions = (
-    <button
+    <Button
       onClick={onClearList}
-      className="manageable-recipe-list__clear-btn"
+      variant="danger" // ✅ CHANGED: from "outline" to "danger"
+      size="small"
       disabled={recipes.length === 0}
+      icon="🗑️"
+      className="manageable-recipe-list__clear-btn"
     >
       Clear All
-    </button>
+    </Button>
   );
 
   const renderRecipeItem = (recipe) => {
@@ -30,33 +35,36 @@ const ManageableRecipeList = ({ recipes, onRemoveRecipe, onClearList }) => {
       idValue: recipe.id,
     });
 
+    const handleRemoveRecipe = () => {
+      console.log("🗑️ Remove button clicked for recipe:", recipe.name);
+      console.log("🗑️ Recipe ID being passed:", recipe.id);
+      console.log("🗑️ Recipe ID type:", typeof recipe.id);
+      console.log("🗑️ Recipe ID value:", recipe.id);
+      console.log("🗑️ Full recipe object:", recipe);
+      console.log("🗑️ About to call onRemoveRecipe with ID:", recipe.id);
+
+      if (typeof onRemoveRecipe === "function") {
+        console.log("🗑️ onRemoveRecipe is a function, calling it now");
+        onRemoveRecipe(recipe.id);
+      } else {
+        console.error(
+          "🗑️ onRemoveRecipe is not a function!",
+          typeof onRemoveRecipe
+        );
+      }
+    };
+
     return (
       <>
-        <button
-          onClick={() => {
-            console.log("🗑️ Remove button clicked for recipe:", recipe.name);
-            console.log("🗑️ Recipe ID being passed:", recipe.id);
-            console.log("🗑️ Recipe ID type:", typeof recipe.id);
-            console.log("🗑️ Recipe ID value:", recipe.id);
-            console.log("🗑️ Full recipe object:", recipe);
-            console.log("🗑️ About to call onRemoveRecipe with ID:", recipe.id);
-
-            // Add a confirmation check to make sure we're not accidentally calling clear
-            if (typeof onRemoveRecipe === "function") {
-              console.log("🗑️ onRemoveRecipe is a function, calling it now");
-              onRemoveRecipe(recipe.id);
-            } else {
-              console.error(
-                "🗑️ onRemoveRecipe is not a function!",
-                typeof onRemoveRecipe
-              );
-            }
-          }}
+        {/* ✅ Beautiful circular IconButton for remove action */}
+        <IconButton
+          icon="×"
+          onClick={handleRemoveRecipe}
+          variant="danger"
+          size="small"
           className="manageable-recipe-list__remove-btn"
           aria-label={`Remove ${recipe.name} recipe`}
-        >
-          ×
-        </button>
+        />
         <Recipe recipeData={recipe} />
       </>
     );

@@ -1,0 +1,260 @@
+/**
+ * QUANTITY CONTROL COMPONENT STYLES
+ * 
+ * Reusable quantity input with increment/decrement buttons.
+ * Provides consistent styling across different sizes and variants.
+ */
+
+.quantity-control {
+  /* Base layout */
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  border: 2px solid #e2e8f0;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.quantity-control:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ==========================================
+ * SIZE VARIANTS
+ * ========================================== */
+
+.quantity-control--small {
+  gap: 2px;
+  min-height: 32px;
+}
+
+.quantity-control--medium {
+  gap: 4px;
+  min-height: 44px;
+}
+
+.quantity-control--large {
+  gap: 6px;
+  min-height: 52px;
+}
+
+/* ==========================================
+ * VISUAL VARIANTS
+ * ========================================== */
+
+.quantity-control--default {
+  /* Default styling already defined in base */
+}
+
+.quantity-control--compact {
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+}
+
+.quantity-control--minimal {
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.quantity-control--minimal:focus-within {
+  border: 2px solid #3b82f6;
+  background-color: #ffffff;
+}
+
+/* ==========================================
+ * INPUT STYLING
+ * ========================================== */
+
+.quantity-control__input {
+  /* Remove default input styling */
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-weight: 500;
+  text-align: center;
+  color: #374151;
+
+  /* Remove number input arrows */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.quantity-control__input::-webkit-outer-spin-button,
+.quantity-control__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Size-specific input styling */
+.quantity-control--small .quantity-control__input {
+  width: 40px;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.quantity-control--medium .quantity-control__input {
+  width: 60px;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+.quantity-control--large .quantity-control__input {
+  width: 80px;
+  font-size: 16px;
+  padding: 12px 16px;
+}
+
+.quantity-control__input:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.quantity-control__input::placeholder {
+  color: #9ca3af;
+}
+
+/* ==========================================
+ * BUTTON STYLING
+ * ========================================== */
+
+.quantity-control__decrement,
+.quantity-control__increment {
+  /* Override Button component styling for integrated look */
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  color: #6b7280 !important;
+  flex-shrink: 0;
+}
+
+.quantity-control__decrement:hover:not(:disabled),
+.quantity-control__increment:hover:not(:disabled) {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+.quantity-control__decrement:disabled,
+.quantity-control__increment:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Size-specific button styling */
+.quantity-control--small .quantity-control__decrement,
+.quantity-control--small .quantity-control__increment {
+  min-width: 28px !important;
+  font-size: 14px !important;
+}
+
+.quantity-control--medium .quantity-control__decrement,
+.quantity-control--medium .quantity-control__increment {
+  min-width: 36px !important;
+  font-size: 16px !important;
+}
+
+.quantity-control--large .quantity-control__decrement,
+.quantity-control--large .quantity-control__increment {
+  min-width: 44px !important;
+  font-size: 18px !important;
+}
+
+/* ==========================================
+ * STATE MODIFIERS
+ * ========================================== */
+
+.quantity-control--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.quantity-control--readonly {
+  border-color: #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.quantity-control--readonly .quantity-control__input {
+  cursor: default;
+}
+
+.quantity-control--input-only {
+  gap: 0;
+}
+
+.quantity-control--input-only .quantity-control__input {
+  width: 100%;
+  text-align: left;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* ==========================================
+ * RESPONSIVE DESIGN
+ * ========================================== */
+
+@media (max-width: 640px) {
+  .quantity-control--large {
+    min-height: 44px; /* Reduce large size on mobile */
+  }
+
+  .quantity-control--large .quantity-control__input {
+    width: 60px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+/* ==========================================
+ * DARK MODE SUPPORT
+ * ========================================== */
+
+@media (prefers-color-scheme: dark) {
+  .quantity-control {
+    border-color: #374151;
+    background-color: #1f2937;
+  }
+
+  .quantity-control:focus-within {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  }
+
+  .quantity-control__input {
+    color: #f9fafb;
+  }
+
+  .quantity-control__input:disabled {
+    color: #6b7280;
+  }
+
+  .quantity-control__input::placeholder {
+    color: #6b7280;
+  }
+
+  .quantity-control__decrement,
+  .quantity-control__increment {
+    color: #d1d5db !important;
+  }
+
+  .quantity-control__decrement:hover:not(:disabled),
+  .quantity-control__increment:hover:not(:disabled) {
+    background-color: #374151 !important;
+    color: #f9fafb !important;
+  }
+
+  .quantity-control--disabled,
+  .quantity-control--readonly {
+    border-color: #4b5563;
+    background-color: #111827;
+  }
+
+  .quantity-control--compact {
+    border-color: #4b5563;
+    background-color: #111827;
+  }
+}
