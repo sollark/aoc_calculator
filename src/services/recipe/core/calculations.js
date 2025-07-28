@@ -324,6 +324,148 @@ export const createRecipeCalculationService = (recipeService) => {
     processRecipeListToRawComponents,
     breakDownToRawComponents,
     convertRecipeToRawComponents,
+    addRecipeToList, // ✅ ADD: Missing function
+    removeRecipeFromList, // ✅ ADD: Bonus function
+    updateRecipeQuantityInList, // ✅ ADD: Bonus function
+    getTotalRecipeCount, // ✅ ADD: Bonus function
+    clearRecipeList, // ✅ ADD: Bonus function
     initializeCalculationService,
   };
+};
+
+/**
+ * Add a recipe to an existing recipe list
+ * Handles duplicate recipes by incrementing quantity
+ * @param {Array} currentList - Current recipe list
+ * @param {Object} recipeToAdd - Recipe object to add
+ * @param {number} quantity - Quantity to add (default: 1)
+ * @returns {Array} Updated recipe list
+ */
+export const addRecipeToList = async (
+  currentList,
+  recipeToAdd,
+  quantity = 1
+) => {
+  console.log(`📝 Adding recipe "${recipeToAdd.name}" x${quantity} to list`);
+
+  if (!currentList || !Array.isArray(currentList)) {
+    console.log("🔍 Creating new recipe list");
+    return [
+      {
+        id: currentList?.length || 0,
+        recipe: recipeToAdd,
+        quantity: quantity,
+      },
+    ];
+  }
+
+  // Check if recipe already exists in the list
+  const existingIndex = currentList.findIndex(
+    (item) => item.recipe && item.recipe.id === recipeToAdd.id
+  );
+
+  if (existingIndex !== -1) {
+    // Recipe exists, increment quantity
+    console.log(`🔍 Recipe already exists, incrementing quantity`);
+    const updatedList = [...currentList];
+    updatedList[existingIndex] = {
+      ...updatedList[existingIndex],
+      quantity: updatedList[existingIndex].quantity + quantity,
+    };
+
+    console.log(
+      `✅ Updated "${recipeToAdd.name}" quantity to ${updatedList[existingIndex].quantity}`
+    );
+    return updatedList;
+  } else {
+    // Recipe doesn't exist, add new entry
+    console.log(`🔍 Adding new recipe to list`);
+    const newItem = {
+      id: currentList.length,
+      recipe: recipeToAdd,
+      quantity: quantity,
+    };
+
+    console.log(`✅ Added "${recipeToAdd.name}" x${quantity} to list`);
+    return [...currentList, newItem];
+  }
+};
+
+/**
+ * Remove a recipe from the recipe list
+ * @param {Array} currentList - Current recipe list
+ * @param {number|string} recipeId - ID of recipe to remove
+ * @returns {Array} Updated recipe list
+ */
+export const removeRecipeFromList = (currentList, recipeId) => {
+  console.log(`🗑️ Removing recipe ID ${recipeId} from list`);
+
+  if (!currentList || !Array.isArray(currentList)) {
+    console.log("🔍 No list to remove from");
+    return [];
+  }
+
+  const updatedList = currentList.filter(
+    (item) => item.recipe && item.recipe.id !== recipeId
+  );
+
+  console.log(`✅ Removed recipe, list now has ${updatedList.length} items`);
+  return updatedList;
+};
+
+/**
+ * Update recipe quantity in the list
+ * @param {Array} currentList - Current recipe list
+ * @param {number|string} recipeId - ID of recipe to update
+ * @param {number} newQuantity - New quantity
+ * @returns {Array} Updated recipe list
+ */
+export const updateRecipeQuantityInList = (
+  currentList,
+  recipeId,
+  newQuantity
+) => {
+  console.log(`📝 Updating recipe ID ${recipeId} quantity to ${newQuantity}`);
+
+  if (!currentList || !Array.isArray(currentList)) {
+    console.log("🔍 No list to update");
+    return [];
+  }
+
+  const updatedList = currentList.map((item) => {
+    if (item.recipe && item.recipe.id === recipeId) {
+      return {
+        ...item,
+        quantity: newQuantity,
+      };
+    }
+    return item;
+  });
+
+  console.log(`✅ Updated recipe quantity`);
+  return updatedList;
+};
+
+/**
+ * Get total recipe count in the list
+ * @param {Array} recipeList - Recipe list to count
+ * @returns {number} Total number of individual recipes (considering quantities)
+ */
+export const getTotalRecipeCount = (recipeList) => {
+  if (!recipeList || !Array.isArray(recipeList)) {
+    return 0;
+  }
+
+  return recipeList.reduce((total, item) => {
+    return total + (item.quantity || 1);
+  }, 0);
+};
+
+/**
+ * Clear the recipe list
+ * @returns {Array} Empty array
+ */
+export const clearRecipeList = () => {
+  console.log("🗑️ Clearing recipe list");
+  return [];
 };

@@ -11,7 +11,6 @@ export * from "./constants.js";
 
 // Core operations (organized by concern)
 export * as queries from "./core/queries.js";
-export * as mutations from "./core/mutations.js";
 export * as calculations from "./core/calculations.js";
 export * as utilities from "./core/utilities.js";
 
@@ -28,11 +27,16 @@ export * as sorting from "./processing/sorting.js";
 // Convenience exports for common operations
 export { getAllRecipes, getRecipeById } from "./core/queries.js";
 
-export { addRecipe, updateRecipe, deleteRecipe } from "./core/mutations.js";
+export {
+  addRecipe, // ✅ REPLACE: was from mutations, now from queries
+  updateRecipeById as updateRecipe, // ✅ REPLACE: mutations.updateRecipe → queries.updateRecipeById
+  removeRecipeById as deleteRecipe, // ✅ REPLACE: mutations.deleteRecipe → queries.removeRecipeById
+} from "./core/queries.js";
 
 export {
   processRecipeListToRawComponents,
-  breakDownRecipeToRawComponents,
+  addRecipeToList,
+  breakDownToRawComponents,
 } from "./core/calculations.js";
 
 // Default export

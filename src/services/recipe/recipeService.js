@@ -1,5 +1,4 @@
 import * as queries from "./core/queries.js";
-import * as mutations from "./core/mutations.js";
 import * as calculations from "./core/calculations.js";
 import * as utilities from "./core/utilities.js";
 
@@ -31,6 +30,9 @@ export const createRecipeServiceFunctions = () => {
     /**
      * Initialize the recipe service and load data
      * DATA: Initializes JSON file reading and caching
+     * INPUT: None
+     * OUTPUT: Service initialization status
+     *
      * @function initialize
      * @returns {Promise<boolean>} Success status of initialization
      */
@@ -58,46 +60,46 @@ export const createRecipeServiceFunctions = () => {
      * OUTPUT: Array of recipe objects matching the type
      * @function getRecipesByType
      * @param {string} type - Recipe type to filter by
-     * @returns {Promise<Array<Object>>} Filtered array of recipes
+     * @returns {Promise<Array<Object>>} Array of recipes matching the specified type
      */
     getRecipesByType: queries.getRecipesByType,
 
     /**
-     * Get a specific recipe by its unique ID
-     * DATA: JSON file → Single RecipeObject or null
-     * INPUT: Number/String (recipe ID)
+     * Get single recipe by unique ID
+     * DATA: JSON file → Single RecipeObject
+     * INPUT: Recipe ID (number or string)
      * OUTPUT: Single recipe object or null if not found
      * @function getRecipeById
-     * @param {number|string} id - Unique recipe identifier
-     * @returns {Promise<Object|null>} Single recipe object or null
+     * @param {number|string} id - Recipe ID to find
+     * @returns {Promise<Object|null>} Recipe object or null if not found
      */
     getRecipeById: queries.getRecipeById,
 
     /**
      * Filter recipes based on multiple criteria
      * DATA: JSON file → Filtered Array<RecipeObject>
-     * INPUT: Object with filter criteria
-     * OUTPUT: Array of recipe objects matching all criteria
+     * INPUT: Filter criteria object
+     * OUTPUT: Array of recipes matching all criteria
      * @function filterRecipes
-     * @param {Object} filters - Filter criteria object
+     * @param {Object} criteria - Filter criteria object
      * @returns {Promise<Array<Object>>} Filtered recipes array
      */
     filterRecipes: queries.filterRecipes,
 
     /**
-     * Find recipes that use a specific component/ingredient
+     * Find recipes that use a specific component
      * DATA: JSON file → Filtered Array<RecipeObject>
-     * INPUT: String (component name)
-     * OUTPUT: Array of recipes that require the component
+     * INPUT: Component name string
+     * OUTPUT: Array of recipes that require the specified component
      * @function getRecipesByComponent
-     * @param {string} componentName - Name of the component to search for
-     * @returns {Promise<Array<Object>>} Recipes that use the component
+     * @param {string} componentName - Name of component to search for
+     * @returns {Promise<Array<Object>>} Recipes using the specified component
      */
     getRecipesByComponent: queries.getRecipesByComponent,
 
     /**
-     * Get list of all artisan skills from recipes
-     * DATA: JSON file → Unique Array<String>
+     * Get list of available artisan skills
+     * DATA: JSON file → Array<String>
      * INPUT: None
      * OUTPUT: Array of unique artisan skill names
      * @function getArtisanSkills
@@ -106,8 +108,8 @@ export const createRecipeServiceFunctions = () => {
     getArtisanSkills: queries.getArtisanSkills,
 
     /**
-     * Get list of all gathering skills from recipes
-     * DATA: JSON file → Unique Array<String>
+     * Get list of available gathering skills
+     * DATA: JSON file → Array<String>
      * INPUT: None
      * OUTPUT: Array of unique gathering skill names
      * @function getGatheringSkills
@@ -137,10 +139,11 @@ export const createRecipeServiceFunctions = () => {
      * INPUT: Single recipe object
      * OUTPUT: Updated array with new recipe added
      * @function addRecipe
+     * @param {string} type - Recipe type category
      * @param {Object} recipe - Recipe object to add
      * @returns {Promise<Object>} Result object with success/failure info
      */
-    addRecipe: mutations.addRecipe,
+    addRecipe: queries.addRecipe, // ✅ REPLACE: mutations.addRecipe → queries.addRecipe
 
     /**
      * Update an existing recipe in the runtime collection
@@ -152,7 +155,7 @@ export const createRecipeServiceFunctions = () => {
      * @param {Object} updatedRecipe - New recipe data
      * @returns {Promise<Object>} Result object with success/failure info
      */
-    updateRecipe: mutations.updateRecipe,
+    updateRecipe: queries.updateRecipeById, // ✅ REPLACE: mutations.updateRecipe → queries.updateRecipeById
 
     /**
      * Remove a recipe from the runtime collection
@@ -163,73 +166,100 @@ export const createRecipeServiceFunctions = () => {
      * @param {number|string} id - Recipe ID to delete
      * @returns {Promise<Object>} Result object with success/failure info
      */
-    deleteRecipe: mutations.deleteRecipe,
+    deleteRecipe: queries.removeRecipeById, // ✅ REPLACE: mutations.deleteRecipe → queries.removeRecipeById
 
     // ==========================================
-    // CALCULATION OPERATIONS (COMPLEX PROCESSING)
-    // Work with: Array<RecipeListItem> → Array<ComponentObject>
+    // CALCULATION OPERATIONS
+    // Work with: Array<Object> → Calculated Results
     // ==========================================
 
     /**
-     * Process a user's recipe list into raw components needed
-     * DATA: Array<RecipeListItem> → Array<ComponentObject>
-     * INPUT: Array of {id, recipe, quantity} objects (user's recipe list)
-     * OUTPUT: Array of {name, quantity, sources} objects (consolidated components)
+     * Calculate total raw components needed for a recipe list
+     * DATA: Array<RecipeObjects> → Array<ComponentObjects>
+     * INPUT: Array of recipe objects with quantities
+     * OUTPUT: Consolidated array of raw components with total quantities
      * @function processRecipeListToRawComponents
-     * @param {Array<Object>} recipeList - User's recipe list items
-     * @returns {Promise<Array<Object>>} Raw components needed for all recipes
+     * @param {Array<Object>} recipeList - List of recipes with quantities
+     * @returns {Promise<Array<Object>>} Consolidated raw components
      */
     processRecipeListToRawComponents:
       calculations.processRecipeListToRawComponents,
 
     /**
-     * Recursively break down a recipe into its raw components
-     * DATA: Single RecipeObject → Array<ComponentObject>
-     * INPUT: Recipe name and quantity
-     * OUTPUT: Array of raw components needed (no sub-recipes)
+     * Add a single recipe to an existing recipe list
+     * DATA: Array<RecipeObjects> → Array<RecipeObjects> (with new item)
+     * INPUT: Current recipe list and new recipe to add
+     * OUTPUT: Updated recipe list with new recipe included
+     * @function addRecipeToList
+     * @param {Array<Object>} currentList - Current recipe list
+     * @param {Object} recipeToAdd - Recipe to add to the list
+     * @param {number} quantity - Quantity to add (default: 1)
+     * @returns {Promise<Array<Object>>} Updated recipe list
+     */
+    addRecipeToList: calculations.addRecipeToList,
+
+    /**
+     * Break down a single recipe into its raw component parts
+     * DATA: Single RecipeObject → Array<ComponentObjects>
+     * INPUT: Single recipe object
+     * OUTPUT: Array of raw components needed for the recipe
      * @function breakDownToRawComponents
-     * @param {string} recipeName - Name of recipe to break down
-     * @param {number} quantity - How many of this recipe to make
-     * @returns {Promise<Array<Object>>} Raw components for this recipe
+     * @param {Object} recipe - Recipe to break down
+     * @returns {Promise<Array<Object>>} Raw components for the recipe
      */
     breakDownToRawComponents: calculations.breakDownToRawComponents,
 
     /**
-     * Convert a single recipe to its immediate components
-     * DATA: Single RecipeObject → Array<ComponentObject>
-     * INPUT: Recipe object
-     * OUTPUT: Array of immediate components (may include sub-recipes)
-     * @function convertRecipeToRawComponents
-     * @param {Object} recipe - Recipe object to convert
-     * @returns {Array<Object>} Immediate components list
+     * Remove a recipe from the recipe list
+     * @function removeRecipeFromList
+     * @param {Array<Object>} currentList - Current recipe list
+     * @param {number|string} recipeId - ID of recipe to remove
+     * @returns {Array<Object>} Updated recipe list
      */
-    convertRecipeToRawComponents: calculations.convertRecipeToRawComponents,
+    removeRecipeFromList: calculations.removeRecipeFromList,
+
+    /**
+     * Update recipe quantity in the list
+     * @function updateRecipeQuantityInList
+     * @param {Array<Object>} currentList - Current recipe list
+     * @param {number|string} recipeId - ID of recipe to update
+     * @param {number} newQuantity - New quantity
+     * @returns {Array<Object>} Updated recipe list
+     */
+    updateRecipeQuantityInList: calculations.updateRecipeQuantityInList,
+
+    /**
+     * Get total recipe count in the list
+     * @function getTotalRecipeCount
+     * @param {Array<Object>} recipeList - Recipe list to count
+     * @returns {number} Total number of individual recipes
+     */
+    getTotalRecipeCount: calculations.getTotalRecipeCount,
+
+    /**
+     * Clear the recipe list
+     * @function clearRecipeList
+     * @returns {Array} Empty array
+     */
+    clearRecipeList: calculations.clearRecipeList,
 
     // ==========================================
-    // UTILITY OPERATIONS (SYSTEM FUNCTIONS)
-    // Work with: Service state and metadata
+    // CACHE MANAGEMENT
     // ==========================================
 
     /**
-     * Check if the recipe service is healthy and operational
-     * DATA: Service state → Status Object
-     * INPUT: None
-     * OUTPUT: Object with service health information
-     * @function healthCheck
-     * @returns {Promise<Object>} Health status object
+     * Invalidate all caches to force fresh data loading
+     * @function invalidateAllCaches
+     * @returns {void}
      */
-    healthCheck: utilities.healthCheck,
+    invalidateAllCaches: queries.invalidateAllCaches,
 
     /**
-     * Export recipe data in various formats
-     * DATA: JSON database → Formatted export data
-     * INPUT: Export format specification
-     * OUTPUT: Formatted data ready for download/export
-     * @function exportData
-     * @param {string} format - Export format ('json', 'csv', etc.)
-     * @returns {Promise<string|Object>} Exported data in requested format
+     * Pre-warm all caches for optimal performance
+     * @function warmAllCaches
+     * @returns {Promise<Object>} Cache warming results
      */
-    exportData: utilities.exportData,
+    warmAllCaches: queries.warmAllCaches,
   };
 };
 

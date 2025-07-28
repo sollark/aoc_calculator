@@ -61,3 +61,19 @@ export const SPECIAL_CATEGORIES = {
   POTIONS: "potions",
   OTHER_CONSUMABLES: "other_consumables",
 };
+
+/**
+ * Cache duration in milliseconds
+ * @type {number}
+ */
+export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Validation limits
+ * @type {Object}
+ */
+export const VALIDATION_LIMITS = {
+  NAME_MAX_LENGTH: 100,
+  DESCRIPTION_MAX_LENGTH: 500,
+  MIN_ID: 1,
+};
