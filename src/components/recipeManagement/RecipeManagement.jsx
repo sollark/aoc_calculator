@@ -10,9 +10,8 @@ import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList.j
 import "./recipeManagement.css";
 
 const RecipeManagement = ({ onRecipeListChange }) => {
-  // Get recipes from context
-  const { availableRecipes, isLoading, error, stateManagers } =
-    useRecipeContext();
+  // Get recipes from context (remove stateManagers from destructuring)
+  const { availableRecipes, isLoading, error } = useRecipeContext();
 
   // Filter to only include intermediate recipes and crafted items (no raw components)
   const craftableRecipes = React.useMemo(() => {
@@ -33,8 +32,9 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   // Initialize hooks with filtered craftable recipes
   const { selectedRecipe, handleRecipeChange } =
     useRecipeSelection(craftableRecipes);
+  // ✅ CHANGE THIS LINE: Remove stateManagers parameter
   const { recipeList, handleAddRecipe, handleRemoveRecipe, handleClearList } =
-    useRecipeList(stateManagers);
+    useRecipeList();
   const stats = useRecipeStats(craftableRecipes, recipeList);
   const validation = useRecipeValidation(
     selectedRecipe,

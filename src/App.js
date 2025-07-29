@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import "./app.css";
 import RecipeManagement from "./components/recipeManagement/RecipeManagement";
 import ComponentList from "./components/componentList/ComponentList";
 import { LoadingState } from "./components/ui/LoadingState";
 import { ErrorState } from "./components/ui/ErrorState";
 import { RecipeProvider } from "./contexts/RecipeContext";
+import { RecipeListProvider } from "./contexts/RecipeListContext.jsx"; // ✅ ADD THIS
 import { useRecipeData } from "./hooks/useRecipeData";
 import { useAppState } from "./hooks/useAppState";
 import { useComponentCalculation } from "./hooks/useComponentCalculation";
@@ -30,7 +31,7 @@ function App() {
   const stateManagers = useAppState(recipeServiceFunctions, isInitialized);
 
   // Track the current list of selected recipes for crafting
-  const [currentRecipeList, setCurrentRecipeList] = React.useState([]);
+  const [currentRecipeList, setCurrentRecipeList] = useState([]);
 
   // Calculate the consolidated raw materials needed for all selected recipes
   const consolidatedComponents = useComponentCalculation(currentRecipeList);
@@ -42,6 +43,7 @@ function App() {
    * @param {Array} newRecipeList - Updated list of selected recipes with quantities
    */
   const handleRecipeListChange = useCallback((newRecipeList) => {
+    console.log("📱 App - Recipe list changed:", newRecipeList);
     setCurrentRecipeList(newRecipeList);
   }, []);
 
@@ -80,28 +82,36 @@ function App() {
       recipeService={recipeServiceFunctions}
       stateManagers={stateManagers}
     >
-      <div className="App">
-        <header className="App-header">
-          <h1>AoC Calculator</h1>
-          <p>A helpful tool for crafting in Ashes of Creation</p>
-        </header>
+      <RecipeListProvider>
+        <div className="App">
+          <header className="App-header">
+            <h1>🏗️ Ashes of Creation Calculator</h1>
+            <p>Plan your crafting recipes and calculate required components.</p>
+          </header>
 
-        <main className="App-main">
-          {/* No allRecipes prop needed - gets it from context */}
-          <RecipeManagement onRecipeListChange={handleRecipeListChange} />
+          <main className="App-main">
+            <section className="App-section">
+              <h2>📋 Recipe Management</h2>
+              {/* No allRecipes prop needed - gets it from context */}
+              <RecipeManagement onRecipeListChange={handleRecipeListChange} />
+            </section>
 
-          <ComponentList
-            components={consolidatedComponents}
-            title="Raw Materials Required"
-            showQuantityControls={true}
-            showBreakdown={true}
-          />
-        </main>
+            <section className="App-section">
+              <h2>🧱 Required Components</h2>
+              <ComponentList
+                components={consolidatedComponents}
+                title="Consolidated Components"
+                showQuantityControls={true}
+                showBreakdown={true}
+              />
+            </section>
+          </main>
 
-        <footer className="App-footer">
-          <p>&copy; 2025 AoC Calculator</p>
-        </footer>
-      </div>
+          <footer className="App-footer">
+            <p>&copy; 2025 AoC Calculator</p>
+          </footer>
+        </div>
+      </RecipeListProvider>
     </RecipeProvider>
   );
 }
