@@ -33,10 +33,7 @@ function App() {
   const [currentRecipeList, setCurrentRecipeList] = React.useState([]);
 
   // Calculate the consolidated raw materials needed for all selected recipes
-  const consolidatedComponents = useComponentCalculation(
-    currentRecipeList,
-    recipeServiceFunctions
-  );
+  const consolidatedComponents = useComponentCalculation(currentRecipeList);
 
   /**
    * Callback to update the recipe list when selections change in RecipeManagement

@@ -16,7 +16,7 @@ export * as utilities from "./core/utilities.js";
 
 // Data operations
 export * as storage from "./data/storage.js";
-export * as arrayOps from "./data/arrayOperations.js";
+export * as storageOps from "./data/storageOperations.js";
 
 // Processing utilities
 export * as filters from "./processing/filters.js";

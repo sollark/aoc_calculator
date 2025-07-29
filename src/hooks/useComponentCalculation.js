@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
+import { processRecipeListToRawComponents } from "../services/recipe";
 
 /**
  * Custom hook for calculating consolidated components from recipe list
+ *
+ * Encapsulates component calculation logic with proper error handling.
+ * Uses direct import instead of dependency injection for better maintainability.
+ *
  * @param {Array} recipeList - List of recipes to process
- * @param {Object} recipeServiceFunctions - Recipe service functions
  * @returns {Array} Consolidated components
  */
-export const useComponentCalculation = (recipeList, recipeServiceFunctions) => {
+export const useComponentCalculation = (recipeList) => {
   const [consolidatedComponents, setConsolidatedComponents] = useState([]);
 
   useEffect(() => {
@@ -15,21 +19,15 @@ export const useComponentCalculation = (recipeList, recipeServiceFunctions) => {
       console.log("🔍 recipeList:", recipeList);
       console.log("🔍 recipeList length:", recipeList?.length);
 
+      // Log each recipe item for debugging
       recipeList?.forEach((item, index) => {
         console.log(`🔍 Recipe list item ${index}:`, item);
         console.log(`🔍 Recipe list item ${index} recipe:`, item?.recipe);
       });
 
-      if (!recipeServiceFunctions || !recipeList || recipeList.length === 0) {
-        console.log("🔍 Setting empty components - no recipes or no function");
-        setConsolidatedComponents([]);
-        return;
-      }
-
-      if (!recipeServiceFunctions.processRecipeListToRawComponents) {
-        console.error(
-          "🔍 processRecipeListToRawComponents function not available"
-        );
+      // Early return for empty or invalid recipe list
+      if (!recipeList || recipeList.length === 0) {
+        console.log("🔍 Setting empty components - no recipes provided");
         setConsolidatedComponents([]);
         return;
       }
@@ -39,14 +37,15 @@ export const useComponentCalculation = (recipeList, recipeServiceFunctions) => {
           "🔍 About to call processRecipeListToRawComponents with:",
           recipeList
         );
-        const consolidated =
-          await recipeServiceFunctions.processRecipeListToRawComponents(
-            recipeList
-          );
+
+        // ✅ FIXED: Direct function call instead of through parameter
+        const consolidated = await processRecipeListToRawComponents(recipeList);
+
         console.log(
           "🔍 processRecipeListToRawComponents result:",
           consolidated
         );
+
         setConsolidatedComponents(consolidated);
       } catch (err) {
         console.error("Error processing recipe list:", err);
@@ -55,7 +54,7 @@ export const useComponentCalculation = (recipeList, recipeServiceFunctions) => {
     };
 
     processComponents();
-  }, [recipeList, recipeServiceFunctions]);
+  }, [recipeList]);
 
   return consolidatedComponents;
 };
