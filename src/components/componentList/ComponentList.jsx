@@ -1,128 +1,80 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import BaseRecipeList from "../baseRecipeList/BaseRecipeList";
-import CraftComponent from "../craftComponent/CraftComponent";
+import ComponentItem from "./components/ComponentItem";
+import ComponentSummary from "./components/ComponentSummary";
+import { useComponentQuantities } from "../../hooks/useComponentQuantities";
+import { useComponentList } from "../../hooks/useComponentList";
 import "./componentList.css";
 
+/**
+ * ComponentList Component
+ *
+ * Main orchestrator component for displaying component lists with quantity management.
+ * Follows composition pattern with specialized child components.
+ * Uses custom hooks for logic separation and functional programming principles.
+ *
+ * Features:
+ * - Pure functional approach with hooks
+ * - Composition over inheritance
+ * - Single responsibility per component
+ * - Immutable state management
+ * - Performance-optimized with memoization
+ *
+ * @component
+ */
 const ComponentList = ({
-  components,
+  components = [],
   title = "Required Components",
   showQuantityControls = false,
   showBreakdown = false,
   onQuantityChange,
 }) => {
-  // Use component ID as key instead of name for state management
-  const [componentQuantities, setComponentQuantities] = useState({});
+  // Use custom hooks for state management and configuration
+  const {
+    quantityMetrics,
+    handlers: { updateQuantity, getComponentStatus },
+  } = useComponentQuantities(components, onQuantityChange);
 
-  const handleQuantityChange = (componentId, componentName, newQuantity) => {
-    setComponentQuantities((prev) => ({
-      ...prev,
-      [componentId]: newQuantity, // Use ID as key
-    }));
+  const { listConfig, displayOptions } = useComponentList({
+    components,
+    title,
+    showQuantityControls,
+    showBreakdown,
+    quantityMetrics,
+  });
 
-    if (onQuantityChange) {
-      onQuantityChange(componentId, componentName, newQuantity);
-    }
-  };
-
+  // Pure function for rendering component items
   const renderComponentItem = (component) => {
-    const currentQuantity = componentQuantities[component.id] || 0;
-    const isComplete = currentQuantity >= component.quantity;
-    const shortage = Math.max(0, component.quantity - currentQuantity);
+    const componentStatus = getComponentStatus(component);
 
     return (
-      <div
-        className={`component-list__item-content ${
-          isComplete ? "component-list__item-content--complete" : ""
-        }`}
-      >
-        <div className="component-list__item-header">
-          <CraftComponent
-            id={component.id}
-            name={component.name}
-            quantity={component.quantity}
-            currentQuantity={currentQuantity}
-            onQuantityChange={
-              showQuantityControls ? handleQuantityChange : undefined
-            }
-            readOnly={!showQuantityControls}
-          />
-
-          {showBreakdown && (
-            <div className="component-list__item-meta">
-              {component.isRaw && (
-                <span className="component-list__badge component-list__badge--raw">
-                  Raw Material
-                </span>
-              )}
-              {component.isUnknown && (
-                <span className="component-list__badge component-list__badge--unknown">
-                  Unknown
-                </span>
-              )}
-              {shortage > 0 && (
-                <span className="component-list__shortage">
-                  Need: {shortage}
-                </span>
-              )}
-              {isComplete && (
-                <span className="component-list__complete">✓ Complete</span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {component.description && (
-          <p className="component-list__description">{component.description}</p>
-        )}
-      </div>
+      <ComponentItem
+        component={component}
+        componentStatus={componentStatus}
+        displayOptions={displayOptions}
+        onQuantityChange={updateQuantity}
+      />
     );
   };
 
-  // Calculate totals for summary - use component.id for lookups
-  const totalComponents = components.length;
-  const completedComponents = components.filter(
-    (component) =>
-      (componentQuantities[component.id] || 0) >= component.quantity
-  ).length;
-  const totalQuantityNeeded = components.reduce(
-    (sum, component) => sum + component.quantity,
-    0
-  );
-  const totalQuantityHave = components.reduce(
-    (sum, component) => sum + (componentQuantities[component.id] || 0),
-    0
-  );
-
-  const headerActions = showBreakdown && totalComponents > 0 && (
-    <div className="component-list__summary">
-      <span className="component-list__summary-stat">
-        Components: {completedComponents}/{totalComponents}
-      </span>
-      <span className="component-list__summary-stat">
-        Total: {totalQuantityHave}/{totalQuantityNeeded}
-      </span>
-      {completedComponents === totalComponents && (
-        <span className="component-list__summary-complete">
-          🎉 All Complete!
-        </span>
-      )}
-    </div>
-  );
+  // Generate header actions using composition
+  const headerActions = displayOptions.shouldShowSummary ? (
+    <ComponentSummary quantityMetrics={quantityMetrics} />
+  ) : null;
 
   return (
     <BaseRecipeList
-      items={components}
-      title={title ? `${title} (${totalComponents} unique materials)` : null}
-      emptyMessage="No components required."
-      className="component-list"
+      {...listConfig}
       headerActions={headerActions}
       itemRenderer={renderComponentItem}
     />
   );
 };
 
+// Comprehensive PropTypes with clear documentation
 ComponentList.propTypes = {
+  /** Array of components to display */
   components: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
@@ -132,10 +84,14 @@ ComponentList.propTypes = {
       isUnknown: PropTypes.bool,
       description: PropTypes.string,
     })
-  ).isRequired,
+  ),
+  /** List title */
   title: PropTypes.string,
+  /** Whether to show quantity control inputs */
   showQuantityControls: PropTypes.bool,
+  /** Whether to show detailed breakdown and metadata */
   showBreakdown: PropTypes.bool,
+  /** Callback function when component quantity changes */
   onQuantityChange: PropTypes.func,
 };
 
