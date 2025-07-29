@@ -25,10 +25,24 @@ export { default as IconButton } from "./IconButton";
 
 /**
  * QuantityControl - Reusable quantity input with increment/decrement
- * Features: Min/max validation, keyboard navigation, multiple sizes
  */
 export { default as QuantityControl } from "./QuantityControl";
 
+/**
+ * StatusMessage - Reusable status display component
+ * Features: Multiple variants, accessibility, dark mode support
+ */
+export { default as StatusMessage } from "./StatusMessage";
+
+/**
+ * LoadingState - Simple loading state component
+ */
+export { LoadingState } from "./LoadingState";
+
+/**
+ * ErrorState - Simple error state component
+ */
+export { ErrorState } from "./ErrorState";
 /**
  * COMPARISON: BARREL EXPORTS VS DIRECT IMPORTS
  *

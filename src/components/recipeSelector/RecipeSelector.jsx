@@ -1,13 +1,24 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Select, Button } from "../ui";
+import { useRecipeSelector } from "../../hooks/useRecipeSelector";
+import RecipeControls from "./components/RecipeControls";
+import RecipeStatus from "./components/RecipeStatus";
+import LoadingState from "./components/LoadingState";
 import "./recipeSelector.css";
 
 /**
- * Recipe Selector Component
+ * RecipeSelector Component
  *
- * Specialized component for recipe selection and management.
- * Uses reusable UI components while maintaining domain-specific logic.
+ * Main orchestrator component for recipe selection functionality.
+ * Follows composition pattern with specialized child components.
+ * Uses custom hooks for logic separation and functional programming principles.
+ *
+ * Features:
+ * - Pure functional approach with hooks
+ * - Composition over inheritance
+ * - Single responsibility per component
+ * - Immutable state management
+ * - Clear separation of concerns
  *
  * @component
  */
@@ -18,81 +29,34 @@ const RecipeSelector = ({
   onAddRecipe,
   recipeListCount = 0,
 }) => {
-  // Transform recipes for the Select component
-  const selectOptions = Array.isArray(recipes) ? recipes : [];
+  // Use custom hook for selection logic
+  const { selectOptions, selectionState, handlers } = useRecipeSelector({
+    recipes,
+    selectedRecipe,
+    onRecipeChange,
+    onAddRecipe,
+  });
 
-  // Handle recipe selection
-  const handleRecipeSelect = (selectedOption) => {
-    console.log("🔍 RecipeSelector - Recipe selected:", selectedOption);
-    onRecipeChange?.(selectedOption);
-  };
-
-  // Handle add recipe action
-  const handleAddRecipe = (e) => {
-    console.log("🔧 RecipeSelector - Add Recipe clicked");
-    console.log("🔍 Selected recipe:", selectedRecipe);
-
-    if (!selectedRecipe) {
-      console.warn("❌ No recipe selected");
-      return;
-    }
-
-    onAddRecipe?.(e);
-  };
-
-  // Render loading state
-  if (selectOptions.length === 0) {
+  // Early return for loading state (guard clause pattern)
+  if (selectionState.isLoading) {
     return (
-      <div className="recipe-selector recipe-selector--loading">
-        <div className="recipe-selector__controls">
-          <Select
-            disabled
-            placeholder="Loading recipes..."
-            emptyMessage="No recipes available"
-            className="recipe-selector__dropdown"
-          />
-          <Button
-            disabled
-            variant="primary"
-            className="recipe-selector__add-btn"
-          >
-            Add Recipe
-          </Button>
-        </div>
-        <StatusMessage type="loading">Loading recipes...</StatusMessage>
-      </div>
+      <LoadingState
+        recipeListCount={recipeListCount}
+        message="Loading recipes..."
+      />
     );
   }
 
+  // Main component render with composition
   return (
     <div className="recipe-selector">
-      <div className="recipe-selector__controls">
-        <Select
-          options={selectOptions}
-          value={selectedRecipe}
-          onChange={handleRecipeSelect}
-          placeholder="Select a recipe..."
-          getOptionValue={(recipe) => recipe?.name}
-          getOptionLabel={(recipe) =>
-            recipe?.name || `Recipe ${recipe?.id}` || "Unknown Recipe"
-          }
-          getOptionKey={(recipe) =>
-            recipe?.id || recipe?.name || `recipe-${Math.random()}`
-          }
-          emptyMessage="No recipes available"
-          className="recipe-selector__dropdown"
-        />
-
-        <Button
-          onClick={handleAddRecipe}
-          disabled={!selectedRecipe}
-          variant="primary"
-          badge={recipeListCount || null}
-          className="recipe-selector__add-btn"
-        >
-          Add Recipe
-        </Button>
-      </div>
+      <RecipeControls
+        selectOptions={selectOptions}
+        selectedRecipe={selectedRecipe}
+        onRecipeSelect={handlers.onRecipeSelect}
+        onAddRecipe={handlers.onAddRecipe}
+        recipeListCount={recipeListCount}
+      />
 
       <RecipeStatus
         recipeCount={selectOptions.length}
@@ -103,81 +67,25 @@ const RecipeSelector = ({
   );
 };
 
-/**
- * Status Message Component
- *
- * Displays contextual status information.
- *
- * @component
- */
-const StatusMessage = ({ children, type = "info" }) => (
-  <p className={`recipe-selector__status recipe-selector__status--${type}`}>
-    {children}
-  </p>
-);
-
-StatusMessage.propTypes = {
-  children: PropTypes.node.isRequired,
-  type: PropTypes.oneOf(["info", "success", "loading", "empty"]),
-};
-
-/**
- * Recipe Status Component
- *
- * Displays recipe selection and list status information.
- * Encapsulates status logic for better maintainability.
- *
- * @component
- */
-const RecipeStatus = ({ recipeCount, selectedRecipe, recipeListCount }) => {
-  // Show recipe list count if there are items
-  if (recipeListCount > 0) {
-    return (
-      <StatusMessage type="success">
-        {recipeListCount} recipe{recipeListCount !== 1 ? "s" : ""} in your list
-      </StatusMessage>
-    );
-  }
-
-  // Show selected recipe info
-  if (selectedRecipe) {
-    return (
-      <StatusMessage type="success">
-        ✅ Selected: <strong>{selectedRecipe.name}</strong>
-      </StatusMessage>
-    );
-  }
-
-  // Show available recipes count when nothing is selected
-  if (recipeCount > 0) {
-    return (
-      <StatusMessage type="info">
-        {recipeCount} recipe{recipeCount !== 1 ? "s" : ""} available
-      </StatusMessage>
-    );
-  }
-
-  // Fallback to empty state
-  return <StatusMessage type="empty">No recipes available</StatusMessage>;
-};
-
-RecipeStatus.propTypes = {
-  recipeCount: PropTypes.number.isRequired,
-  selectedRecipe: PropTypes.object,
-  recipeListCount: PropTypes.number.isRequired,
-};
-
-// Main component PropTypes
+// Comprehensive PropTypes with clear documentation
 RecipeSelector.propTypes = {
-  /** Array of available recipes */
-  recipes: PropTypes.array,
+  /** Array of available recipes for selection */
+  recipes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      name: PropTypes.string.isRequired,
+    })
+  ),
   /** Currently selected recipe object */
-  selectedRecipe: PropTypes.object,
-  /** Callback when recipe selection changes */
+  selectedRecipe: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string.isRequired,
+  }),
+  /** Callback function when recipe selection changes */
   onRecipeChange: PropTypes.func.isRequired,
-  /** Callback when add recipe button is clicked */
+  /** Callback function when add recipe button is clicked */
   onAddRecipe: PropTypes.func.isRequired,
-  /** Number of recipes in the current list */
+  /** Number of recipes currently in the user's list */
   recipeListCount: PropTypes.number,
 };
 

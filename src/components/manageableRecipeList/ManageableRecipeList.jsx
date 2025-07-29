@@ -1,23 +1,51 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Recipe from "../recipeCard/RecipeCard";
+import RecipeCard from "../recipeCard/RecipeCard";
 import BaseRecipeList from "../baseRecipeList/BaseRecipeList";
 import { Button, IconButton } from "../ui";
 import "./manageableRecipeList.css";
 
+// ✅ EXCELLENT: Extract static props outside component
+const STATIC_PROPS = {
+  // Clear button static props
+  clearButton: {
+    variant: "danger",
+    size: "small",
+    icon: "🗑️",
+    className: "manageable-recipe-list__clear-btn",
+    children: "Clear All",
+  },
+
+  // Remove button static props
+  removeButton: {
+    icon: "×",
+    variant: "danger",
+    size: "small",
+    className: "manageable-recipe-list__remove-btn",
+  },
+
+  // List static props
+  list: {
+    className: "manageable-recipe-list",
+    emptyMessage:
+      "No recipes added yet. Select a recipe and click 'Add Recipe' to get started.",
+  },
+};
+
 const ManageableRecipeList = ({ recipes, onRemoveRecipe, onClearList }) => {
-  // ✅ FIXED: Clear All button now uses danger variant to match remove button
+  // ✅ GOOD: Only dynamic props inside component
+  const clearButtonDynamicProps = {
+    onClick: onClearList,
+    disabled: recipes.length === 0,
+  };
+
+  const listDynamicProps = {
+    items: recipes,
+    title: `Recipe List (${recipes.length} recipes)`,
+  };
+
   const headerActions = (
-    <Button
-      onClick={onClearList}
-      variant="danger" // ✅ CHANGED: from "outline" to "danger"
-      size="small"
-      disabled={recipes.length === 0}
-      icon="🗑️"
-      className="manageable-recipe-list__clear-btn"
-    >
-      Clear All
-    </Button>
+    <Button {...STATIC_PROPS.clearButton} {...clearButtonDynamicProps} />
   );
 
   const renderRecipeItem = (recipe) => {
@@ -54,28 +82,27 @@ const ManageableRecipeList = ({ recipes, onRemoveRecipe, onClearList }) => {
       }
     };
 
+    // ✅ GOOD: Only dynamic props for remove button
+    const removeButtonDynamicProps = {
+      onClick: handleRemoveRecipe,
+      "aria-label": `Remove ${recipe.name} recipe`,
+    };
+
     return (
       <>
-        {/* ✅ Beautiful circular IconButton for remove action */}
         <IconButton
-          icon="×"
-          onClick={handleRemoveRecipe}
-          variant="danger"
-          size="small"
-          className="manageable-recipe-list__remove-btn"
-          aria-label={`Remove ${recipe.name} recipe`}
+          {...STATIC_PROPS.removeButton}
+          {...removeButtonDynamicProps}
         />
-        <Recipe recipe={recipe} />
+        <RecipeCard recipe={recipe} />
       </>
     );
   };
 
   return (
     <BaseRecipeList
-      items={recipes}
-      title={`Recipe List (${recipes.length} recipes)`}
-      emptyMessage="No recipes added yet. Select a recipe and click 'Add Recipe' to get started."
-      className="manageable-recipe-list"
+      {...STATIC_PROPS.list}
+      {...listDynamicProps}
       headerActions={headerActions}
       itemRenderer={renderRecipeItem}
     />
