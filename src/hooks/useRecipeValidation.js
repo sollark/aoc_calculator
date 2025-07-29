@@ -1,46 +1,29 @@
 import { useMemo } from "react";
+import { useSelectedList } from "../contexts/SelectedListContext";
 
 /**
- * Custom hook for recipe validation logic
- * @param {string} selectedRecipe - Currently selected recipe
- * @param {Array} recipeList - Current recipe list
- * @param {Array} allRecipes - All available recipes
- * @returns {Object} Validation state
+ * Hook for recipe validation logic
+ * Now takes selectedRecipe as parameter but gets recipeList from context
  */
-export const useRecipeValidation = (selectedRecipe, recipeList, allRecipes) => {
+export const useRecipeValidation = (selectedRecipe) => {
+  // ✅ DIRECT CONTEXT: Get selected recipes directly
+  const { recipeList } = useSelectedList();
+
   return useMemo(() => {
-    console.log("🔍 useRecipeValidation - selectedRecipe:", selectedRecipe);
-    console.log("🔍 useRecipeValidation - recipeList:", recipeList);
-    console.log(
-      "🔍 useRecipeValidation - allRecipes length:",
-      allRecipes?.length
-    );
-
-    // Check if a recipe is selected
-    const hasSelection = Boolean(selectedRecipe);
-
-    // Check if the selected recipe is already in the list
+    const hasSelection = !!selectedRecipe;
     const isAlreadyInList =
       hasSelection &&
       recipeList.some(
-        (item) => item.recipe && item.recipe.id === selectedRecipe.id
+        (item) =>
+          item.recipe?.id === selectedRecipe.id ||
+          item.recipe?.name === selectedRecipe.name
       );
 
-    // Can add if recipe is selected and not already in list
-    const canAddSelected = hasSelection && !isAlreadyInList;
-
-    // Can clear if list has items
-    const canClearList = recipeList.length > 0;
-
-    const validation = {
+    return {
       hasSelection,
-      canAddSelected,
-      canClearList,
       isAlreadyInList,
+      canAddSelected: hasSelection && !isAlreadyInList,
+      canClearList: recipeList.length > 0,
     };
-
-    console.log("🔍 useRecipeValidation result:", validation);
-
-    return validation;
-  }, [selectedRecipe, recipeList, allRecipes]);
+  }, [selectedRecipe, recipeList]);
 };

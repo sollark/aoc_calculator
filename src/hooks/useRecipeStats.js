@@ -1,16 +1,33 @@
 import { useMemo } from "react";
+import { useAvailableList } from "../contexts/AvailableListContext";
+import { useSelectedList } from "../contexts/SelectedListContext";
 
 /**
- * Custom hook for calculating recipe statistics
- * @param {Array} allRecipes - All available recipes
- * @param {Array} recipeList - Current recipe list
- * @returns {Object} Recipe statistics
+ * Hook for calculating recipe statistics
+ * Now gets all data directly from contexts - no parameters needed!
  */
-export const useRecipeStats = (allRecipes, recipeList) => {
+export const useRecipeStats = () => {
+  // ✅ DIRECT CONTEXT: Get available recipes from context
+  const { availableRecipes } = useAvailableList();
+
+  // ✅ DIRECT CONTEXT: Get selected recipes from context
+  const { recipeList } = useSelectedList();
+
   return useMemo(() => {
-    const totalRecipes = allRecipes.length;
-    const selectedCount = recipeList.length;
-    const availableCount = totalRecipes - selectedCount;
+    // Filter craftable recipes (same logic as RecipeManagement)
+    const craftableRecipes =
+      availableRecipes?.filter((recipe) => {
+        return (
+          recipe.recipe &&
+          (recipe.recipe.artisanSkill ||
+            recipe.recipe.workStation ||
+            recipe.recipe.components)
+        );
+      }) || [];
+
+    const totalRecipes = craftableRecipes.length;
+    const selectedCount = recipeList?.length || 0;
+    const availableCount = Math.max(0, totalRecipes - selectedCount);
 
     // Calculate unique recipes vs duplicates
     const uniqueRecipeIds = new Set(recipeList.map((recipe) => recipe.id));
@@ -23,6 +40,7 @@ export const useRecipeStats = (allRecipes, recipeList) => {
       duplicateCount,
       hasRecipes: selectedCount > 0,
       canAddMore: availableCount > 0,
+      craftableRecipes, // ✅ BONUS: Return the filtered list too
     };
-  }, [allRecipes.length, recipeList]);
+  }, [availableRecipes, recipeList]);
 };

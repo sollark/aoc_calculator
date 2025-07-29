@@ -8,37 +8,34 @@ import React, {
 import PropTypes from "prop-types";
 
 /**
- * RecipeListContext - Manages recipe list state globally
- *
- * Centralizes recipe list management to eliminate props drilling
- * and provide consistent state access across components.
+ * SelectedListContext - Manages user's selected recipes
  */
-const RecipeListContext = createContext();
+const SelectedListContext = createContext();
 
 /**
- * Custom hook to use recipe list context
- * @returns {Object} Recipe list state and handlers
+ * Custom hook to use selected list context
+ * @returns {Object} Selected list state and handlers
  */
-export const useRecipeListContext = () => {
-  const context = useContext(RecipeListContext);
+export const useSelectedList = () => {
+  const context = useContext(SelectedListContext);
   if (!context) {
     throw new Error(
-      "useRecipeListContext must be used within a RecipeListProvider"
+      "useSelectedList must be used within a SelectedListProvider"
     );
   }
   return context;
 };
 
 /**
- * RecipeListProvider - Provides recipe list state and handlers
+ * SelectedListProvider - Provides selected list state and handlers
  */
-export const RecipeListProvider = ({ children }) => {
+export const SelectedListProvider = ({ children }) => {
   const [recipeList, setRecipeList] = useState([]);
 
   // Pure function handlers with proper error handling
   const addRecipe = useCallback(
     async (recipe) => {
-      console.log("🔍 RecipeListContext - addRecipe called with:", recipe);
+      console.log("🔍 SelectedList - addRecipe called with:", recipe);
 
       try {
         if (!recipe) {
@@ -78,10 +75,7 @@ export const RecipeListProvider = ({ children }) => {
   );
 
   const removeRecipe = useCallback((recipeId) => {
-    console.log(
-      "🗑️ RecipeListContext - removeRecipe called with ID:",
-      recipeId
-    );
+    console.log("🗑️ SelectedList - removeRecipe called with ID:", recipeId);
 
     try {
       setRecipeList((current) =>
@@ -94,7 +88,7 @@ export const RecipeListProvider = ({ children }) => {
   }, []);
 
   const clearList = useCallback(() => {
-    console.log("🧹 RecipeListContext - clearing recipe list");
+    console.log("🧹 SelectedList - clearing recipe list");
     setRecipeList([]);
   }, []);
 
@@ -132,14 +126,14 @@ export const RecipeListProvider = ({ children }) => {
   );
 
   return (
-    <RecipeListContext.Provider value={contextValue}>
+    <SelectedListContext.Provider value={contextValue}>
       {children}
-    </RecipeListContext.Provider>
+    </SelectedListContext.Provider>
   );
 };
 
-RecipeListProvider.propTypes = {
+SelectedListProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default RecipeListContext;
+export default SelectedListContext;

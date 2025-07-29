@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
-import { useRecipeContext } from "../../contexts/RecipeContext.js";
-import { useRecipeList } from "../../hooks/useRecipeList.js";
+import { useAvailableList } from "../../contexts/AvailableListContext.js";
+import { useSelectedList } from "../../contexts/SelectedListContext.js";
 import { useRecipeSelection } from "../../hooks/useRecipeSelection.js";
 import { useRecipeStats } from "../../hooks/useRecipeStats.js";
 import { useRecipeValidation } from "../../hooks/useRecipeValidation.js";
@@ -10,37 +10,19 @@ import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList.j
 import "./recipeManagement.css";
 
 const RecipeManagement = ({ onRecipeListChange }) => {
-  // Get recipes from context (remove stateManagers from destructuring)
-  const { availableRecipes, isLoading, error } = useRecipeContext();
+  // ✅ CONTEXT: Get loading/error states
+  const { isLoading, error } = useAvailableList();
 
-  // Filter to only include intermediate recipes and crafted items (no raw components)
-  const craftableRecipes = React.useMemo(() => {
-    if (!availableRecipes) return [];
+  // ✅ CONTEXT: Get selected recipes directly
+  const { recipeList, addRecipe, removeRecipe, clearList } = useSelectedList();
 
-    return availableRecipes.filter((recipe) => {
-      // Only include recipes that have a 'recipe' property (indicating they can be crafted)
-      // This excludes raw_components which only have gathering information
-      return (
-        recipe.recipe &&
-        (recipe.recipe.artisanSkill ||
-          recipe.recipe.workStation ||
-          recipe.recipe.components)
-      );
-    });
-  }, [availableRecipes]);
+  // ✅ SIMPLIFIED: Get stats and craftable recipes from hook (which uses context)
+  const { craftableRecipes, ...stats } = useRecipeStats();
 
-  // Initialize hooks with filtered craftable recipes
+  // Initialize other hooks
   const { selectedRecipe, handleRecipeChange } =
     useRecipeSelection(craftableRecipes);
-  // ✅ CHANGE THIS LINE: Remove stateManagers parameter
-  const { recipeList, handleAddRecipe, handleRemoveRecipe, handleClearList } =
-    useRecipeList();
-  const stats = useRecipeStats(craftableRecipes, recipeList);
-  const validation = useRecipeValidation(
-    selectedRecipe,
-    recipeList,
-    craftableRecipes
-  );
+  const validation = useRecipeValidation(selectedRecipe);
 
   // Handle add recipe button click
   const handleAddClick = useCallback(
@@ -49,38 +31,9 @@ const RecipeManagement = ({ onRecipeListChange }) => {
       console.log("🔧 Add recipe button clicked!");
       console.log("📋 Selected recipe:", selectedRecipe?.name);
       console.log("✅ Can add selected:", validation.canAddSelected);
-      console.log("📚 Craftable recipes count:", craftableRecipes?.length);
-      console.log("🏗️ Current recipe list:", recipeList);
-      console.log("🔍 Validation details:", validation);
 
-      // Debug logs for structures
-      console.log("🔍 Selected recipe full structure:", {
-        name: selectedRecipe?.name,
-        id: selectedRecipe?.id,
-        type: typeof selectedRecipe,
-        isString: typeof selectedRecipe === "string",
-        fullObject: selectedRecipe,
-      });
-      console.log("🔍 Recipe list full structure:", recipeList);
-      console.log("🔍 Validation breakdown:", {
-        hasSelection: validation.hasSelection,
-        canAddSelected: validation.canAddSelected,
-        isAlreadyInList: validation.isAlreadyInList,
-        canClearList: validation.canClearList,
-      });
-
-      // Check validation
       if (!validation.canAddSelected) {
         console.log("❌ Cannot add recipe: validation failed");
-        if (!validation.hasSelection) {
-          console.log("❌ Reason: No recipe selected");
-        } else if (validation.isAlreadyInList) {
-          console.log("❌ Reason: Recipe already in list");
-        } else {
-          console.log(
-            "❌ Reason: Unknown validation issue - check useRecipeValidation logic"
-          );
-        }
         return;
       }
 
@@ -90,23 +43,31 @@ const RecipeManagement = ({ onRecipeListChange }) => {
       }
 
       try {
-        console.log("🎯 Recipe to add:", selectedRecipe);
-        console.log("➕ Calling handleAddRecipe with:", selectedRecipe);
-
-        const result = await handleAddRecipe(selectedRecipe);
-        console.log("📤 AddRecipe result:", result);
-
+        const result = await addRecipe(selectedRecipe);
         if (result && result.success) {
           console.log("✅ Recipe added successfully!");
-        } else {
-          console.warn("⚠️ AddRecipe returned unsuccessful result:", result);
         }
       } catch (error) {
         console.error("❌ Error adding recipe:", error);
       }
     },
-    [selectedRecipe, validation, handleAddRecipe, craftableRecipes, recipeList]
+    [selectedRecipe, validation, addRecipe]
   );
+
+  // Handle remove recipe
+  const handleRemoveRecipe = useCallback(
+    (recipeId) => {
+      console.log("🗑️ Removing recipe with ID:", recipeId);
+      removeRecipe(recipeId);
+    },
+    [removeRecipe]
+  );
+
+  // Handle clear list
+  const handleClearList = useCallback(() => {
+    console.log("🧹 Clearing recipe list");
+    clearList();
+  }, [clearList]);
 
   // Update parent when recipe list changes
   useEffect(() => {
@@ -119,16 +80,14 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   // Debug logging
   useEffect(() => {
     console.log(
-      "📋 RecipeManagement - total availableRecipes from context:",
-      availableRecipes?.length || 0
-    );
-    console.log(
-      "📋 RecipeManagement - filtered craftableRecipes:",
+      "📋 RecipeManagement - craftable recipes:",
       craftableRecipes?.length || 0
     );
-    console.log("📋 RecipeManagement - isLoading:", isLoading);
-    console.log("📋 RecipeManagement - error:", error);
-  }, [availableRecipes, craftableRecipes, isLoading, error]);
+    console.log(
+      "📋 RecipeManagement - selected recipes:",
+      recipeList?.length || 0
+    );
+  }, [craftableRecipes, recipeList]);
 
   // Show loading state
   if (isLoading) {
@@ -150,36 +109,25 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     );
   }
 
-  // Transform recipeList to match ManageableRecipeList expectations
+  // Transform recipe list for display
   const transformedRecipeList = recipeList.map((item) => {
-    console.log("🔍 Transforming item:", item);
-
-    // Handle case where recipe is stored as string (current bug)
+    // Handle case where recipe is stored as string (legacy bug)
     if (typeof item.recipe === "string") {
       return {
         id: item.id,
-        name: item.recipe, // Use the string as name
+        name: item.recipe,
         quantity: item.quantity || 1,
         error: "Recipe stored as string instead of object",
       };
     }
 
     // Handle correct case where recipe is an object
-    const transformed = {
-      ...item.recipe, // Spread the recipe data first
-      id: item.id, // Then override with the list item ID (this must come after the spread)
+    return {
+      ...item.recipe,
+      id: item.id, // Use list item ID for removal operations
       name: item.recipe?.name || "Unknown Recipe",
       quantity: item.quantity || 1,
     };
-
-    console.log("🔍 Transformed result:", {
-      listItemId: item.id,
-      originalRecipeId: item.recipe?.id,
-      finalId: transformed.id,
-      name: transformed.name,
-    });
-
-    return transformed;
   });
 
   return (

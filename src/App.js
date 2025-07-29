@@ -4,8 +4,8 @@ import RecipeManagement from "./components/recipeManagement/RecipeManagement";
 import ComponentList from "./components/componentList/ComponentList";
 import { LoadingState } from "./components/ui/LoadingState";
 import { ErrorState } from "./components/ui/ErrorState";
-import { RecipeProvider } from "./contexts/RecipeContext";
-import { RecipeListProvider } from "./contexts/RecipeListContext.jsx"; // ✅ ADD THIS
+import { AvailableListProvider } from "./contexts/AvailableListContext.js";
+import { SelectedListProvider } from "./contexts/SelectedListContext.js";
 import { useRecipeData } from "./hooks/useRecipeData";
 import { useAppState } from "./hooks/useAppState";
 import { useComponentCalculation } from "./hooks/useComponentCalculation";
@@ -78,11 +78,11 @@ function App() {
   // Render the main application interface
   // The layout is split into recipe selection (top) and results (bottom)
   return (
-    <RecipeProvider
+    <AvailableListProvider
       recipeService={recipeServiceFunctions}
       stateManagers={stateManagers}
     >
-      <RecipeListProvider>
+      <SelectedListProvider>
         <div className="App">
           <header className="App-header">
             <h1>🏗️ Ashes of Creation Calculator</h1>
@@ -111,8 +111,8 @@ function App() {
             <p>&copy; 2025 AoC Calculator</p>
           </footer>
         </div>
-      </RecipeListProvider>
-    </RecipeProvider>
+      </SelectedListProvider>
+    </AvailableListProvider>
   );
 }
 
