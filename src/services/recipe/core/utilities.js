@@ -1,5 +1,5 @@
-import * as storage from "../data/storage.js";
 import * as queries from "./queries.js";
+import { getAllRecipesFromStorage } from "../data/storageOperations";
 
 /**
  * Recipe utility functions for common operations
@@ -14,7 +14,7 @@ export const initializeService = async () => {
     console.log("Initializing recipe service...");
 
     // Test reading recipes
-    const recipes = await storage.readRecipes();
+    const recipes = await getAllRecipesFromStorage();
     if (!recipes) {
       throw new Error("Failed to load recipe data");
     }
@@ -25,11 +25,7 @@ export const initializeService = async () => {
       !recipes.intermediate_recipes ||
       !recipes.crafted_items
     ) {
-      console.warn(
-        "Recipe data structure incomplete, initializing defaults..."
-      );
-      const defaultData = storage.initializeRecipes();
-      storage.writeRecipes(defaultData);
+      console.warn("Recipe data structure incomplete.");
     }
 
     console.log("Recipe service initialized successfully");
@@ -52,7 +48,7 @@ export const initializeService = async () => {
  */
 export const healthCheck = async () => {
   try {
-    const recipes = await storage.readRecipes();
+    const recipes = await await getAllRecipesFromStorage();
     const stats = await queries.getStatistics();
 
     return {
@@ -66,36 +62,6 @@ export const healthCheck = async () => {
       healthy: false,
       timestamp: new Date().toISOString(),
       error: error.message,
-    };
-  }
-};
-
-/**
- * Export backup of recipe data
- * @returns {Promise<Object>} Backup result
- */
-export const exportData = async () => {
-  try {
-    const recipes = await storage.readRecipes();
-    const exportData = {
-      ...recipes,
-      exportMetadata: {
-        exportedAt: new Date().toISOString(),
-        version: "1.0.0",
-        source: "AoC Calculator",
-      },
-    };
-
-    storage.writeRecipes(exportData);
-
-    return {
-      success: true,
-      message: "Data exported successfully",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message,
     };
   }
 };

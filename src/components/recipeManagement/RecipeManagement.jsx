@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import PropTypes from "prop-types";
-import { useAvailableList } from "../../contexts/AvailableListContext.js";
-import { useSelectedList } from "../../contexts/SelectedListContext.js";
+import { useAvailableList } from "../../contexts/AvailableRecipeListContext.js";
+import { useSelectedList } from "../../contexts/SelectedRecipeListContext.js";
 import { useRecipeSelection } from "../../hooks/useRecipeSelection.js";
 import { useRecipeStats } from "../../hooks/useRecipeStats.js";
 import { useRecipeValidation } from "../../hooks/useRecipeValidation.js";

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useSelectedList } from "../contexts/SelectedListContext";
+import { useSelectedList } from "../contexts/SelectedRecipeListContext";
 
 /**
  * Hook for recipe validation logic

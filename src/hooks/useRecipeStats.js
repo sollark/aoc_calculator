@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useAvailableList } from "../contexts/AvailableListContext";
-import { useSelectedList } from "../contexts/SelectedListContext";
+import { useAvailableList } from "../contexts/AvailableRecipeListContext";
+import { useSelectedList } from "../contexts/SelectedRecipeListContext";
 
 /**
  * Hook for calculating recipe statistics

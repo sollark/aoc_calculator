@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { processRecipeListToRawComponents } from "../services/recipe";
-import { useSelectedList } from "../contexts/SelectedListContext";
+import { useSelectedList } from "../contexts/SelectedRecipeListContext";
 
 /**
  * Custom hook for calculating consolidated components from selected recipe list in context

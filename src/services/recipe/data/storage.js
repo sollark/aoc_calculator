@@ -10,8 +10,6 @@ let recipesCache = recipesData;
  * @returns {Object} Complete recipes data
  */
 export const readRecipes = async () => {
-  restrictToStorageOperations();
-
   return recipesCache;
 };
 
@@ -20,8 +18,6 @@ export const readRecipes = async () => {
  * @param {Object} newRecipesData - Complete recipes data to write
  */
 export const writeRecipes = (newRecipesData) => {
-  restrictToStorageOperations();
-
   try {
     // Update cache
     recipesCache = newRecipesData;
@@ -52,8 +48,6 @@ export const writeRecipes = (newRecipesData) => {
  * @returns {Object} Default recipes structure
  */
 export const initializeRecipes = () => {
-  restrictToStorageOperations();
-
   const defaultData = {
     [RECIPE_TYPES.RAW_COMPONENTS]: [],
     [RECIPE_TYPES.INTERMEDIATE_RECIPES]: [],
@@ -111,17 +105,3 @@ export const initializeRecipes = () => {
   recipesCache = defaultData;
   return defaultData;
 };
-
-// Helper function to restrict access to storage operations
-// This function checks if the current call stack includes storageOperations.js
-// If not, it throws an error to prevent direct access to storage.js functions.
-// This is to ensure that all storage operations go through the designated operations file.
-function restrictToStorageOperations() {
-  const stack = new Error().stack;
-  // Check if storageOperations.js is in the stack trace
-  if (!stack.includes("storageOperations.js")) {
-    throw new Error(
-      "Direct access to storage.js functions is not allowed. Use storageOperations.js instead."
-    );
-  }
-}
