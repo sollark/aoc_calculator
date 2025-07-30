@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import { useAvailableList } from "../../contexts/AvailableListContext.js";
 import { useSelectedList } from "../../contexts/SelectedListContext.js";
@@ -9,44 +9,20 @@ import RecipeSelector from "../recipeSelector/RecipeSelector.jsx";
 import ManageableRecipeList from "../manageableRecipeList/ManageableRecipeList.jsx";
 import "./recipeManagement.css";
 
-const RecipeManagement = ({ onRecipeListChange }) => {
-  // ✅ CONTEXT: Get loading/error states
+const RecipeManagement = () => {
   const { isLoading, error } = useAvailableList();
-
-  // ✅ CONTEXT: Get selected recipes directly
   const { recipeList, addRecipe, removeRecipe, clearList } = useSelectedList();
-
-  // ✅ SIMPLIFIED: Get stats and craftable recipes from hook (which uses context)
   const { craftableRecipes, ...stats } = useRecipeStats();
-
-  // Initialize other hooks
   const { selectedRecipe, handleRecipeChange } =
     useRecipeSelection(craftableRecipes);
   const validation = useRecipeValidation(selectedRecipe);
 
-  // Handle add recipe button click
   const handleAddClick = useCallback(
     async (event) => {
       event.preventDefault();
-      console.log("🔧 Add recipe button clicked!");
-      console.log("📋 Selected recipe:", selectedRecipe?.name);
-      console.log("✅ Can add selected:", validation.canAddSelected);
-
-      if (!validation.canAddSelected) {
-        console.log("❌ Cannot add recipe: validation failed");
-        return;
-      }
-
-      if (!selectedRecipe) {
-        console.log("❌ No recipe selected");
-        return;
-      }
-
+      if (!validation.canAddSelected || !selectedRecipe) return;
       try {
-        const result = await addRecipe(selectedRecipe);
-        if (result && result.success) {
-          console.log("✅ Recipe added successfully!");
-        }
+        await addRecipe(selectedRecipe);
       } catch (error) {
         console.error("❌ Error adding recipe:", error);
       }
@@ -54,31 +30,19 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     [selectedRecipe, validation, addRecipe]
   );
 
-  // Handle remove recipe
   const handleRemoveRecipe = useCallback(
     (recipeId) => {
-      console.log("🗑️ Removing recipe with ID:", recipeId);
       removeRecipe(recipeId);
     },
     [removeRecipe]
   );
 
-  // Handle clear list
   const handleClearList = useCallback(() => {
-    console.log("🧹 Clearing recipe list");
     clearList();
   }, [clearList]);
 
-  // Update parent when recipe list changes
-  useEffect(() => {
-    console.log("🎯 Recipe list updated:", recipeList);
-    if (onRecipeListChange) {
-      onRecipeListChange(recipeList);
-    }
-  }, [recipeList, onRecipeListChange]);
-
-  // Debug logging
-  useEffect(() => {
+  // Debug logging only
+  React.useEffect(() => {
     console.log(
       "📋 RecipeManagement - craftable recipes:",
       craftableRecipes?.length || 0
@@ -89,7 +53,6 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     );
   }, [craftableRecipes, recipeList]);
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="recipe-management">
@@ -98,7 +61,6 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="recipe-management">
@@ -109,9 +71,7 @@ const RecipeManagement = ({ onRecipeListChange }) => {
     );
   }
 
-  // Transform recipe list for display
   const transformedRecipeList = recipeList.map((item) => {
-    // Handle case where recipe is stored as string (legacy bug)
     if (typeof item.recipe === "string") {
       return {
         id: item.id,
@@ -120,11 +80,9 @@ const RecipeManagement = ({ onRecipeListChange }) => {
         error: "Recipe stored as string instead of object",
       };
     }
-
-    // Handle correct case where recipe is an object
     return {
       ...item.recipe,
-      id: item.id, // Use list item ID for removal operations
+      id: item.id,
       name: item.recipe?.name || "Unknown Recipe",
       quantity: item.quantity || 1,
     };
@@ -142,7 +100,6 @@ const RecipeManagement = ({ onRecipeListChange }) => {
         />
         <RecipeSelectionStats stats={stats} validation={validation} />
       </div>
-
       <div className="recipe-management__list">
         <ManageableRecipeList
           recipes={transformedRecipeList}
@@ -154,9 +111,6 @@ const RecipeManagement = ({ onRecipeListChange }) => {
   );
 };
 
-/**
- * Component for displaying recipe selection statistics
- */
 const RecipeSelectionStats = ({ stats, validation }) => (
   <div className="recipe-management__stats">
     <div className="recipe-management__stat-group">
@@ -170,13 +124,11 @@ const RecipeSelectionStats = ({ stats, validation }) => (
         Remaining: {stats?.availableCount || 0}
       </span>
     </div>
-
     {stats?.duplicateCount > 0 && (
       <div className="recipe-management__warning">
         ⚠️ {stats.duplicateCount} duplicate recipes detected
       </div>
     )}
-
     <div className="recipe-management__status">
       {validation?.canAddSelected ? (
         <span className="recipe-management__status--ready">
@@ -195,10 +147,8 @@ const RecipeSelectionStats = ({ stats, validation }) => (
   </div>
 );
 
-// PropTypes
-RecipeManagement.propTypes = {
-  onRecipeListChange: PropTypes.func,
-};
+// Remove unused prop type
+RecipeManagement.propTypes = {};
 
 RecipeSelectionStats.propTypes = {
   stats: PropTypes.shape({
