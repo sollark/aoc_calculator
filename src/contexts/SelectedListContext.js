@@ -1,21 +1,11 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
-import PropTypes from "prop-types";
+import React, { createContext, useContext } from "react";
+import { useAppReducer } from "../hooks/useAppReducer";
 
 /**
- * SelectedListContext - Manages user's selected recipes
+ * SelectedListContext - Now using reducers instead of complex state service
  */
 const SelectedListContext = createContext();
 
-/**
- * Custom hook to use selected list context
- * @returns {Object} Selected list state and handlers
- */
 export const useSelectedList = () => {
   const context = useContext(SelectedListContext);
   if (!context) {
@@ -26,114 +16,46 @@ export const useSelectedList = () => {
   return context;
 };
 
-/**
- * SelectedListProvider - Provides selected list state and handlers
- */
 export const SelectedListProvider = ({ children }) => {
-  const [recipeList, setRecipeList] = useState([]);
+  const { state, recipeList, recipeListActions } = useAppReducer();
 
-  // Pure function handlers with proper error handling
-  const addRecipe = useCallback(
-    async (recipe) => {
-      console.log("🔍 SelectedList - addRecipe called with:", recipe);
+  console.log("🔧 SelectedListProvider - Recipe count:", recipeList.length);
 
-      try {
-        if (!recipe) {
-          console.error("❌ Cannot add recipe: No recipe provided");
-          return { success: false, message: "No recipe provided" };
-        }
-
-        // Check if recipe already exists
-        const exists = recipeList.some(
-          (item) =>
-            item.recipe?.id === recipe.id || item.recipe?.name === recipe.name
-        );
-
-        if (exists) {
-          console.warn("⚠️ Recipe already exists in list");
-          return { success: false, message: "Recipe already exists" };
-        }
-
-        // Create new recipe list item with proper structure
-        const newItem = {
-          id: `recipe-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-          recipe: { ...recipe }, // Deep copy to prevent mutations
-          quantity: 1,
-          addedAt: new Date().toISOString(),
-        };
-
-        setRecipeList((current) => [...current, newItem]);
-
-        console.log("✅ Recipe added successfully:", recipe.name);
-        return { success: true, message: "Recipe added successfully" };
-      } catch (error) {
-        console.error("❌ Error adding recipe:", error);
-        return { success: false, message: error.message };
-      }
-    },
-    [recipeList]
-  );
-
-  const removeRecipe = useCallback((recipeId) => {
-    console.log("🗑️ SelectedList - removeRecipe called with ID:", recipeId);
+  // Simple wrapper functions for compatibility
+  const addRecipe = async (recipe) => {
+    console.log("🔧 SelectedListContext - Adding recipe:", recipe?.name);
 
     try {
-      setRecipeList((current) =>
-        current.filter((item) => item.id !== recipeId)
-      );
-      console.log("✅ Recipe removed successfully");
+      recipeListActions.addRecipe(recipe);
+      return { success: true, message: "Recipe added successfully" };
     } catch (error) {
-      console.error("❌ Error removing recipe:", error);
+      console.error("❌ Error adding recipe:", error);
+      return { success: false, message: error.message };
     }
-  }, []);
+  };
 
-  const clearList = useCallback(() => {
-    console.log("🧹 SelectedList - clearing recipe list");
-    setRecipeList([]);
-  }, []);
+  const removeRecipe = (recipeId) => {
+    console.log("🔧 SelectedListContext - Removing recipe:", recipeId);
+    recipeListActions.removeRecipe(recipeId);
+  };
 
-  // Memoized computed values
-  const computedValues = useMemo(
-    () => ({
-      recipeCount: recipeList.length,
-      hasRecipes: recipeList.length > 0,
-      recipeIds: recipeList.map((item) => item.id),
-      recipeNames: recipeList
-        .map((item) => item.recipe?.name || "Unknown")
-        .filter(Boolean),
-    }),
-    [recipeList]
-  );
+  const clearList = () => {
+    console.log("🔧 SelectedListContext - Clearing list");
+    recipeListActions.clearList();
+  };
 
-  // Context value with all state and handlers
-  const contextValue = useMemo(
-    () => ({
-      // State
-      recipeList,
-
-      // Computed values
-      ...computedValues,
-
-      // Handlers
-      addRecipe,
-      removeRecipe,
-      clearList,
-
-      // Internal state setter (for advanced use cases)
-      setRecipeList,
-    }),
-    [recipeList, computedValues, addRecipe, removeRecipe, clearList]
-  );
+  const value = {
+    recipeList,
+    count: state.recipeList.count,
+    addRecipe,
+    removeRecipe,
+    clearList,
+    updateQuantity: recipeListActions.updateQuantity,
+  };
 
   return (
-    <SelectedListContext.Provider value={contextValue}>
+    <SelectedListContext.Provider value={value}>
       {children}
     </SelectedListContext.Provider>
   );
 };
-
-SelectedListProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};
-
-export default SelectedListContext;
