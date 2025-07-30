@@ -12,15 +12,6 @@ import { useComponentCalculation } from "./hooks/useComponentCalculation";
 
 /**
  * Main application component for the Ashes of Creation Calculator
- *
- * This component orchestrates the entire application by:
- * - Loading and managing recipe data from external sources
- * - Coordinating state between recipe management and component calculation
- * - Providing a unified interface for crafting calculations
- * - Handling loading states and error conditions gracefully
- *
- * The app follows a unidirectional data flow where recipe selections
- * flow down to component calculations, ensuring consistent state management.
  */
 function App() {
   // Load recipe data from external sources (JSON files)
@@ -30,30 +21,8 @@ function App() {
   // Initialize global application state managers
   const stateManagers = useAppState(recipeServiceFunctions, isInitialized);
 
-  // Track the current list of selected recipes for crafting
-  const [currentRecipeList, setCurrentRecipeList] = useState([]);
-
-  // Calculate the consolidated raw materials needed for all selected recipes
-  const consolidatedComponents = useComponentCalculation(currentRecipeList);
-
-  /**
-   * Callback to update the recipe list when selections change in RecipeManagement
-   * Uses useCallback to prevent unnecessary re-renders of child components
-   *
-   * @param {Array} newRecipeList - Updated list of selected recipes with quantities
-   */
-  const handleRecipeListChange = useCallback((newRecipeList) => {
-    console.log("📱 App - Recipe list changed:", newRecipeList);
-    setCurrentRecipeList(newRecipeList);
-  }, []);
-
-  // Debug logging
-  useEffect(() => {
-    console.log(
-      "🔍 Current recipe list being passed to calculation:",
-      currentRecipeList
-    );
-  }, [currentRecipeList]);
+  // Use consolidated components directly from context-driven hook
+  const consolidatedComponents = useComponentCalculation();
 
   // Show loading spinner while initial data is being fetched
   // This prevents the app from rendering with incomplete data
@@ -92,8 +61,7 @@ function App() {
           <main className="App-main">
             <section className="App-section">
               <h2>📋 Recipe Management</h2>
-              {/* No allRecipes prop needed - gets it from context */}
-              <RecipeManagement onRecipeListChange={handleRecipeListChange} />
+              <RecipeManagement />
             </section>
 
             <section className="App-section">
