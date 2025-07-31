@@ -1,18 +1,16 @@
 import React from "react";
-import RecipeManagement from "./recipeManagement/RecipeManagement";
-import ComponentList from "./componentList/ComponentList";
-import { useComponentCalculation } from "../hooks/useComponentCalculation";
+import Header from "./components/header/Header";
+import Footer from "./components/footer/Footer";
+import RecipeManagement from "./components/recipeManagement/RecipeManagement";
+import ComponentList from "./components/componentList/ComponentList";
+import { useComponentCalculation } from "./hooks/useComponentCalculation";
 
 const InnerApp = () => {
   const consolidatedComponents = useComponentCalculation();
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>🏗️ Ashes of Creation Calculator</h1>
-        <p>Plan your crafting recipes and calculate required components.</p>
-      </header>
-
+      <Header />
       <main className="App-main">
         <section className="App-section">
           <h2>📋 Recipe Management</h2>
@@ -29,10 +27,7 @@ const InnerApp = () => {
           />
         </section>
       </main>
-
-      <footer className="App-footer">
-        <p>&copy; 2025 AoC Calculator</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

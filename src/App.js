@@ -5,7 +5,7 @@ import { AvailableRecipeListProvider } from "./contexts/AvailableRecipeListConte
 import { SelectedRecipeListProvider } from "./contexts/SelectedRecipeListContext.js";
 import { useRecipeData } from "./hooks/useRecipeData";
 import { useAppState } from "./hooks/useAppState";
-import InnerApp from "./components/InnerApp.jsx";
+import InnerApp from "./InnerApp.jsx";
 
 /**
  * Main application component for the Ashes of Creation Calculator
